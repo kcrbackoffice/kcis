@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>KCIS</title>
+<link rel="apple-touch-icon" href="ikon-180.png">
+<link rel="icon" type="image/png" href="ikon-192.png">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="KCIS">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="theme-color" content="#FBF7F3">
+<meta name="color-scheme" content="only light">
+<link rel="prefetch" href="pak-netral.webp"><link rel="prefetch" href="pak-bangga.webp"><link rel="prefetch" href="pak-ingat.webp">
+<style>
+  html,body{margin:0;height:100%;background:#FBF7F3;font-family:system-ui,sans-serif;color-scheme:only light}
+  iframe{position:fixed;inset:0;width:100%;height:100%;border:0;
+    padding-top:env(safe-area-inset-top);box-sizing:border-box;background:#FBF7F3;color-scheme:only light}
+  #msg{position:fixed;inset:0;display:grid;place-items:center;color:#6F6266;font-size:14px;text-align:center;padding:24px}
+</style>
+</head>
+<body>
+<div id="msg"><div><img src="ikon-192.png" alt="" width="96" height="96"><br>Memuat KCIS…</div></div>
+<iframe id="app" title="KCIS - Kacaribu Internal System" allow="geolocation; clipboard-write"></iframe>
+<script>
+/* ====== GANTI dengan link web app KCIS Anda (yang berakhiran /exec) ====== */
+const KCIS_URL = 'https://script.google.com/macros/s/AKfycbyolUcx0fn7cOqi0zjbwFugANUUh3RBKnkTP5w2wq-nhmmYdDJCOD7auqRW841dZsw6/exec';
+/* ======================================================================== */
+
+// Kode perangkat disimpan di halaman ini (penyimpanannya permanen), jadi HP tidak perlu disetujui ulang.
+const q = new URLSearchParams(location.search);
+let dev = q.get('d');
+try { if (!/^D[0-9a-f]{24}$/.test(dev || '')) dev = localStorage.getItem('kcis_dev'); } catch (e) {}
+if (!/^D[0-9a-f]{24}$/.test(dev || '')) dev = 'D' + Array.from(crypto.getRandomValues(new Uint8Array(12)), b => b.toString(16).padStart(2, '0')).join('');
+try { localStorage.setItem('kcis_dev', dev); } catch (e) {}
+if (q.get('d') !== dev) history.replaceState(null, '', location.pathname + '?d=' + dev);
+
+if (!/^https:\/\/script\.google\.com\/.+\/exec$/.test(KCIS_URL)) {
+  document.getElementById('msg').innerHTML = '<div>Link KCIS belum diisi di file index.html.</div>';
+} else {
+  const f = document.getElementById('app');
+  f.onload = () => { document.getElementById('msg').style.display = 'none'; };
+  f.src = KCIS_URL + '?d=' + dev;
+}
+</script>
+</body>
+</html>
