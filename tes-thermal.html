@@ -25,8 +25,9 @@ label{font-size:14px;display:flex;gap:8px;align-items:center}
 <div class="card" style="display:flex;flex-direction:column;gap:10px">
   <div id="st" class="st">Belum tersambung</div>
   <button class="b1" id="sambung">1 · Sambungkan printer (Bluetooth)</button>
-  <div class="row"><button class="b2" id="cetak" disabled>2 · Cetak slip</button><button class="b3" id="tes" disabled>Cetak tes 1 baris</button></div>
-  <label><input type="checkbox" id="dua" checked> Cetak 2 lembar (Pelanggan + KCR)</label>
+  <button class="b2" id="cPel" disabled>2 · Cetak slip PELANGGAN</button>
+  <button class="b2" id="cKcr" disabled>3 · Cetak slip KCR</button>
+  <button class="b3" id="tes" disabled>Cetak tes 1 baris</button>
   <small>Butuh browser yang mendukung Bluetooth: <b>Chrome / Edge</b> di laptop atau Android, atau aplikasi <b>Bluefy</b> di iPad/iPhone. Safari tidak bisa.</small>
 </div>
 <div class="card" style="display:flex;flex-direction:column;gap:10px">
@@ -54,7 +55,7 @@ const P = ['212222','222122','222221','121223','121322','131222','122213','12231
 function c128(t) { const c = [104]; for (const ch of t) c.push(ch.charCodeAt(0) - 32); let s = 104; c.slice(1).forEach((v, i) => s += v * (i + 1)); c.push(s % 103, 106); return c.map(v => P[v]).join(''); }
 
 /* ---------- gambar slip ke canvas ---------- */
-function gambar(logo, dua) {
+function gambar(logo, mode) {   // mode: 'pel' | 'kcr' | 'dua' (pratinjau)
   const cv = document.createElement('canvas'); cv.width = W; cv.height = 3000;
   const x = cv.getContext('2d'); x.fillStyle = '#fff'; x.fillRect(0, 0, W, cv.height); x.fillStyle = '#000'; x.textBaseline = 'top';
   let y = 8; const L = 4, R = W - 4;
@@ -89,9 +90,10 @@ function gambar(logo, dua) {
     else { y += 6; const m = c128(D.no), tot2 = [...m].reduce((a, v) => a + +v, 0), u = Math.floor((R - L - 20) / tot2); let xx = (W - tot2 * u) / 2;
       [...m].forEach((v, i) => { const w = +v * u; if (i % 2 === 0) x.fillRect(xx, y, w, 60); xx += w; }); y += 64; t(D.no, 18, false, 'center'); y += 26; }
   }
-  lembar(false);
-  if (dua) { y += 14; F(16, false); x.textAlign = 'center'; x.fillText('- - - - - - - ✂ potong di sini - - - - - - -', W / 2, y); y += 40; lembar(true); }
-  y += 40;
+  if (mode !== 'kcr') lembar(false);
+  if (mode === 'dua') { y += 14; for (let i = 0; i < W; i += 14) x.fillRect(i, y, 8, 2); y += 30; }
+  if (mode !== 'pel') lembar(true);
+  y += 20;
   const out = document.createElement('canvas'); out.width = W; out.height = Math.ceil(y / 8) * 8; out.getContext('2d').drawImage(cv, 0, 0); return out;
 }
 
@@ -107,7 +109,7 @@ function escpos(cv) {
       for (let k = 0; k < 8; k++) { const i = (y * w + b * 8 + k) * 4, l = .3 * px[i] + .59 * px[i + 1] + .11 * px[i + 2]; if (px[i + 3] > 128 && l < 140) v |= 0x80 >> k; }
       out.push(v); }
   }
-  out.push(0x1B, 0x64, 4);                                // maju 4 baris
+  out.push(0x1B, 0x64, 5);                                // maju 5 baris supaya tulisan lewat garis sobek
   return new Uint8Array(out);
 }
 
@@ -123,7 +125,7 @@ async function sambung() {
     const gatt = await dev.gatt.connect();
     for (const u of SVC) { try { const s = await gatt.getPrimaryService(u); for (const c of await s.getCharacteristics()) if (c.properties.write || c.properties.writeWithoutResponse) { ch = c; break; } } catch (e) { } if (ch) break; }
     if (!ch) { st('Tersambung ke ' + (dev.name || 'perangkat') + ', tapi jalur cetak tidak ditemukan. Kirim screenshot ini ke Claude.', 'err'); return; }
-    st('Tersambung: ' + (dev.name || 'printer') + ' ✓', 'ok'); document.getElementById('cetak').disabled = false; document.getElementById('tes').disabled = false;
+    st('Tersambung: ' + (dev.name || 'printer') + ' ✓', 'ok'); document.getElementById('cPel').disabled = false; document.getElementById('cKcr').disabled = false; document.getElementById('tes').disabled = false;
   } catch (e) { st('Gagal menyambung: ' + e.message, 'err'); }
 }
 async function kirim(bytes) {
@@ -136,10 +138,16 @@ async function kirim(bytes) {
   st(`Selesai dikirim dalam ${((Date.now() - t0) / 1000).toFixed(1)} detik ✓`, 'ok');
 }
 let logo;
-function render() { const c = gambar(logo, document.getElementById('dua').checked), p = document.getElementById('prev'); p.width = c.width; p.height = c.height; p.getContext('2d').drawImage(c, 0, 0); return c; }
+function render() { const c = gambar(logo, 'dua'), p = document.getElementById('prev'); p.width = c.width; p.height = c.height; p.getContext('2d').drawImage(c, 0, 0); return c; }
 document.getElementById('sambung').onclick = sambung;
-document.getElementById('dua').onchange = render;
-document.getElementById('cetak').onclick = async () => { try { await kirim(escpos(render())); } catch (e) { st('Gagal mencetak: ' + e.message, 'err'); } };
+async function cetakLembar(mode, btn, nama) {
+  btn.disabled = true;
+  try { await kirim(escpos(gambar(logo, mode))); st(`Slip ${nama} selesai ✓${mode === 'pel' ? ' — sobek, lalu tekan Cetak slip KCR' : ''}`, 'ok'); }
+  catch (e) { st('Gagal mencetak: ' + e.message, 'err'); }
+  btn.disabled = false;
+}
+document.getElementById('cPel').onclick = e => cetakLembar('pel', e.currentTarget, 'PELANGGAN');
+document.getElementById('cKcr').onclick = e => cetakLembar('kcr', e.currentTarget, 'KCR');
 document.getElementById('tes').onclick = async () => { try { await kirim(new TextEncoder().encode('\x1B@KACARIBU - tes printer OK\n\n\n')); } catch (e) { st('Gagal: ' + e.message, 'err'); } };
 document.getElementById('simpan').onclick = () => { const a = document.createElement('a'); a.download = 'slip-buyback.png'; a.href = render().toDataURL('image/png'); a.click(); };
 logo = new Image(); logo.onload = render; logo.src = LOGO;
