@@ -65,35 +65,29 @@ function gambar(logo, mode) {   // mode: 'pel' | 'kcr' | 'dua' (pratinjau)
   const dash = () => { y += 4; for (let i = L; i < R; i += 10) x.fillRect(i, y, 6, 2); y += 10; };
   const solid = () => { y += 4; x.fillRect(L, y, R - L, 3); y += 11; };
   function lembar(toko) {
-    const lw = 300, lh = lw * logo.height / logo.width; x.drawImage(logo, (W - lw) / 2, y, lw, lh); y += lh + 8;
-    t('Pasar Impres Sei Sikambing C-II No. 8-10A', 17, false, 'center'); y += 21; t('Medan · IG @kacaribujewelry', 17, false, 'center'); y += 28;
-    const judul = toko ? 'BUYBACK SLIP KCR' : 'BUYBACK SLIP PELANGGAN'; F(22, true); const tw = x.measureText(judul).width + 24;
-    x.lineWidth = 3; x.strokeRect((W - tw) / 2, y - 4, tw, 34); t(judul, 22, true, 'center'); y += 40;
-    dash(); kv('No.', D.no, 20, true); kv('Tanggal', D.tgl); kv('Dilayani', D.sales);
-    if (toko) { kv('Pelanggan', D.pel, 20, true); kv('No. HP', D.hp); }
+    if (!toko) { const lw = 230, lh = lw * logo.height / logo.width; x.drawImage(logo, (W - lw) / 2, y, lw, lh); y += lh + 10; }
+    t(toko ? 'BUYBACK SLIP KCR' : 'BUYBACK SLIP PELANGGAN', 21, true, 'center'); y += 26;
+    dash(); kv(D.no, D.tgl, 18, false); kv('Dilayani', D.sales, 18);
+    if (toko) kv(D.pel, D.hp, 18);
     dash();
     let tot = 0;
     D.items.forEach(it => { const h = hitung(it); tot += h.bersih;
-      if (!toko) { kv(it.nama, rb(h.bersih), 22, true); return; }
-      t(it.nama, 22, true); y += 28;
-      kv(`${it.kode} · ${it.kadar} · ${brt(it.berat)} gr`, '', 18);
-      kv(`Surat ${it.nota}`, rb(it.beli), 18);
-      kv(`Pasar ${brt(it.berat)}×${rb(it.hgr)}`, rb(h.pasar), 18);
-      t(`Dasar: ${h.surat ? 'harga surat' : 'harga pasaran'}`, 18, true); y += 24;
-      if (h.surat) kv(`Potong ${h.g} gr × ${rb(it.pot)}`, '-' + rb(h.pot), 18);
-      kv('Bersih', rb(h.bersih), 21, true); y += 4; });
-    solid(); t(toko ? 'TOTAL DIBAYAR KE PELANGGAN' : 'UANG YANG ANDA TERIMA', 18, false); y += 24; t('Rp' + rb(tot), 36, true, 'right'); y += 46;
+      if (!toko) { kv(it.nama, rb(h.bersih), 20, true); return; }
+      kv(it.nama, rb(h.bersih), 20, true);
+      kv(`${it.kode}·${it.kadar}·${brt(it.berat)}gr · ${h.surat ? 'dasar surat' : 'dasar pasar'}`, '', 16);
+      kv(h.surat ? `${it.nota} ${rb(it.beli)} - ${h.g}×${rb(it.pot / 1000)}rb` : `${brt(it.berat)} × ${rb(it.hgr)}`, '', 16);
+      y += 2; });
+    solid(); kv(toko ? 'TOTAL DIBAYAR' : 'DITERIMA', 'Rp' + rb(tot), 26, true); y += 2;
     const bayar = D.bayar.slice(); const sisa = tot - bayar.reduce((a, b) => a + b[1], 0); if (sisa > 0) bayar.push(['Cash', sisa]);
-    if (toko) { dash(); t('Dibayar dari:', 18, true); y += 24; }
-    bayar.forEach(b => kv(b[0] + (toko && b[0] !== 'Cash' ? ' (rek. toko)' : ''), rb(b[1]), 19));
-    if (!toko) { y += 10; x.save(); x.translate(W / 2, y + 26); x.rotate(-0.06); x.lineWidth = 5; x.strokeRect(-110, -26, 220, 52); F(34, true); x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillText('L U N A S', 0, 2); x.restore(); x.textBaseline = 'top'; y += 66; }
-    else { y += 6; const m = c128(D.no), tot2 = [...m].reduce((a, v) => a + +v, 0), u = Math.floor((R - L - 20) / tot2); let xx = (W - tot2 * u) / 2;
-      [...m].forEach((v, i) => { const w = +v * u; if (i % 2 === 0) x.fillRect(xx, y, w, 60); xx += w; }); y += 64; t(D.no, 18, false, 'center'); y += 26; }
+    bayar.forEach(b => kv(b[0] + (toko && b[0] !== 'Cash' ? ' (rek. toko)' : ''), rb(b[1]), 18));
+    if (!toko) { y += 6; F(26, true); const tw = x.measureText('LUNAS').width + 40; x.lineWidth = 4; x.strokeRect((W - tw) / 2, y, tw, 40); x.textAlign = 'center'; x.fillText('LUNAS', W / 2, y + 7); y += 46; }
+    else { y += 6; const m = c128(D.no), tot2 = [...m].reduce((a, v) => a + +v, 0), u = Math.floor((R - L - 40) / tot2); let xx = (W - tot2 * u) / 2;
+      [...m].forEach((v, i) => { const w = +v * u; if (i % 2 === 0) x.fillRect(xx, y, w, 48); xx += w; }); y += 52; }
   }
   if (mode !== 'kcr') lembar(false);
   if (mode === 'dua') { y += 14; for (let i = 0; i < W; i += 14) x.fillRect(i, y, 8, 2); y += 30; }
   if (mode !== 'pel') lembar(true);
-  y += 20;
+  y += 56;                                         // jarak aman di bawah
   const out = document.createElement('canvas'); out.width = W; out.height = Math.ceil(y / 8) * 8; out.getContext('2d').drawImage(cv, 0, 0); return out;
 }
 
@@ -109,7 +103,7 @@ function escpos(cv) {
       for (let k = 0; k < 8; k++) { const i = (y * w + b * 8 + k) * 4, l = .3 * px[i] + .59 * px[i + 1] + .11 * px[i + 2]; if (px[i + 3] > 128 && l < 140) v |= 0x80 >> k; }
       out.push(v); }
   }
-  out.push(0x1B, 0x64, 5);                                // maju 5 baris supaya tulisan lewat garis sobek
+  out.push(0x1B, 0x4A, 0, 0x1B, 0x64, 6);                                // maju 5 baris supaya tulisan lewat garis sobek
   return new Uint8Array(out);
 }
 
@@ -129,12 +123,13 @@ async function sambung() {
   } catch (e) { st('Gagal menyambung: ' + e.message, 'err'); }
 }
 async function kirim(bytes) {
-  const n = 180, t0 = Date.now();
+  const n = 100, t0 = Date.now();
   for (let i = 0; i < bytes.length; i += n) {
     const part = bytes.slice(i, i + n);
-    if (ch.properties.writeWithoutResponse) { await ch.writeValueWithoutResponse(part); await new Promise(r => setTimeout(r, 12)); } else await ch.writeValue(part);
+    if (ch.properties.writeWithoutResponse) { await ch.writeValueWithoutResponse(part); await new Promise(r => setTimeout(r, 30)); } else await ch.writeValue(part);
     st(`Mengirim… ${Math.round((i + n) / bytes.length * 100)}%`);
   }
+  await new Promise(r => setTimeout(r, 1500));          // beri waktu printer menghabiskan antrean
   st(`Selesai dikirim dalam ${((Date.now() - t0) / 1000).toFixed(1)} detik ✓`, 'ok');
 }
 let logo;
