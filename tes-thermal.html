@@ -67,25 +67,29 @@ function gambar(logo, mode) {   // mode: 'pel' | 'kcr' | 'dua' (pratinjau)
   const kv = (k, v, sz = 20, bv) => { t(k, sz, false); t(v, sz, bv, 'right'); y += sz + 6; };
   const dash = () => { y += 4; for (let i = L; i < R; i += 10) x.fillRect(i, y, 6, 2); y += 10; };
   const solid = () => { y += 4; x.fillRect(L, y, R - L, 3); y += 11; };
+  /* Desain 1 · Blok hitam */
+  const rr = (x0, y0, w, h, r, fill, lw) => { x.beginPath(); x.roundRect(x0, y0, w, h, r); if (fill) x.fill(); else { x.lineWidth = lw || 3; x.stroke(); } };
+  const tw = (s, sz, b, al, xx, yy, col) => { F(sz, b); x.textAlign = al; x.fillStyle = col || '#000'; x.fillText(s, xx, yy); x.fillStyle = '#000'; };
   function lembar(toko) {
-    if (!toko) { const lw = 230, lh = lw * logo.height / logo.width; x.drawImage(logo, (W - lw) / 2, y, lw, lh); y += lh + 10; }
-    t(toko ? 'BUYBACK SLIP KCR' : 'BUYBACK SLIP PELANGGAN', 24, true, 'center'); y += 32;
-    dash(); kv('No.', D.no, 21, true); kv('Tanggal', D.tgl, 21); kv('Dilayani', D.sales, 21);
-    if (toko) { kv('Pelanggan', D.pel, 21, true); kv('No. HP', D.hp, 21); }
-    dash();
-    let tot = 0;
-    D.items.forEach(it => { const h = hitung(it); tot += h.bersih;
-      if (!toko) { kv(it.nama, rb(h.bersih), 23, true); return; }
-      kv(it.nama, rb(h.bersih), 23, true);
-      kv(`${it.kode}·${it.kadar}·${brt(it.berat)}gr · ${h.surat ? 'dsr surat' : 'dsr pasar'}`, '', 19);
-      kv(h.surat ? `${rb(it.beli)} - ${h.g}gr×${rb(it.pot / 1000)}rb` : `${brt(it.berat)} × ${rb(it.hgr)}`, '', 19);
-      y += 2; });
-    solid(); kv(toko ? 'TOTAL' : 'DITERIMA', 'Rp' + rb(tot), 30, true); y += 2;
+    const A = 6, B = W - 6, PW = B - A;
+    if (!toko) { const lw = 220, lh = lw * logo.height / logo.width; x.drawImage(logo, (W - lw) / 2, y, lw, lh); y += lh + 12; }
+    rr(A, y, PW, 44, 12, true); tw('BUYBACK', 22, true, 'left', A + 12, y + 11, '#fff'); tw(toko ? 'SLIP KCR' : 'SLIP PELANGGAN', 15, true, 'right', B - 12, y + 15, '#fff'); y += 56;
+    const meta = [['NO.', D.no], ['TANGGAL', D.tgl], ['DILAYANI', D.sales]]; if (toko) meta.push(['PELANGGAN', D.pel], ['NO. HP', D.hp]);
+    for (let k = 0; k < meta.length; k += 2) { [meta[k], meta[k + 1]].forEach((m, c) => { if (!m) return; const xx = A + 2 + c * (PW / 2 + 4);
+        tw(m[0], 12, true, 'left', xx, y); tw(m[1], 18, true, 'left', xx, y + 15); }); y += 44; }
+    y += 4; let tot = 0;
+    D.items.forEach(it => { const h = hitung(it); tot += h.bersih; const bh = toko ? 76 : 40;
+      rr(A + 1, y, PW - 2, bh, 12, false, 2.5);
+      tw(it.nama, 20, true, 'left', A + 12, y + 9); tw(rb(h.bersih), 20, false, 'right', B - 12, y + 9);
+      if (toko) { tw(`${it.kode} · ${it.kadar} · ${brt(it.berat)} gr`, 15, false, 'left', A + 12, y + 35);
+        tw(h.surat ? `Dasar surat: ${rb(it.beli)} − ${h.g} gr × ${rb(it.pot / 1000)}rb` : `Dasar pasar: ${brt(it.berat)} × ${rb(it.hgr)}`, 15, false, 'left', A + 12, y + 53); }
+      y += bh + 8; });
+    rr(A, y, PW, 52, 12, true); tw(toko ? 'TOTAL' : 'DITERIMA', 16, true, 'left', A + 12, y + 19, '#fff'); tw('Rp' + rb(tot), 30, true, 'right', B - 12, y + 11, '#fff'); y += 62;
     const bayar = D.bayar.slice(); const sisa = tot - bayar.reduce((a, b) => a + b[1], 0); if (sisa > 0) bayar.push(['Cash', sisa]);
-    bayar.forEach(b => kv(b[0] + (toko && b[0] !== 'Cash' ? ' (rek. toko)' : ''), rb(b[1]), 21));
-    if (!toko) { y += 6; F(26, true); const tw = x.measureText('LUNAS').width + 40; x.lineWidth = 4; x.strokeRect((W - tw) / 2, y, tw, 40); x.textAlign = 'center'; x.fillText('LUNAS', W / 2, y + 7); y += 46; }
-    else { y += 6; const m = c128(D.no), tot2 = [...m].reduce((a, v) => a + +v, 0), u = Math.floor((R - L - 40) / tot2); let xx = (W - tot2 * u) / 2;
-      [...m].forEach((v, i) => { const w = +v * u; if (i % 2 === 0) x.fillRect(xx, y, w, 54); xx += w; }); y += 56; }
+    bayar.forEach(b => { tw(b[0] + (toko && b[0] !== 'Cash' ? ' (rek. toko)' : ''), 18, false, 'left', A + 4, y); tw(rb(b[1]), 18, true, 'right', B - 4, y); y += 25; });
+    if (!toko) { y += 8; F(22, true); const lw2 = 170; rr((W - lw2) / 2, y, lw2, 40, 20, false, 3); x.textAlign = 'center'; x.fillText('L U N A S', W / 2, y + 9); y += 48; }
+    else { y += 8; const m = c128(D.no), tot2 = [...m].reduce((a, v) => a + +v, 0), u = Math.floor((PW - 40) / tot2); let xx = (W - tot2 * u) / 2;
+      [...m].forEach((v, i) => { const w = +v * u; if (i % 2 === 0) x.fillRect(xx, y, w, 50); xx += w; }); y += 54; }
   }
   if (mode !== 'kcr') lembar(false);
   if (mode === 'dua') { y += 14; for (let i = 0; i < W; i += 14) x.fillRect(i, y, 8, 2); y += 30; }
