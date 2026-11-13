@@ -45,7 +45,8 @@ ol{margin:0;padding-left:20px;font-size:14px;line-height:1.6}
 <section class="card">
   <b>2 · Data barang (contoh dari KCIS)</b>
   <div class="g2"><label>Kode barang<input id="kode" value="KC00412"></label><label>Nama<input id="nama" value="Kalung Rantai Italy"></label></div>
-  <div class="g3"><label>Kode emas<input id="ke" value="17K"></label><label>Kadar<input id="kd" value="75%"></label><label>Berat (gr)<input id="br" value="5,20"></label></div>
+  <div class="g3"><label>Kode emas<input id="ke" value="17K"></label><label>Kadar<input id="kd" value="75%"></label><label>Berat netto (gr)<input id="br" value="5,20"></label></div>
+  <div class="g2"><label>Berat brutto (gr, opsional)<input id="bb" value="5,26" placeholder="kosongkan bila tidak perlu"></label><small style="align-self:end">Netto = berat emas saja · Brutto = emas + label/tali. Kosongkan brutto kalau tidak ingin dicetak.</small></div>
   <div class="g2"><label>Jenis kode<select id="jenis"><option value="bar">Barcode garis</option></select></label><label>Jumlah label<input id="qty" type="number" min="1" max="50" value="1"></label></div>
 </section>
 
@@ -60,8 +61,8 @@ ol{margin:0;padding-left:20px;font-size:14px;line-height:1.6}
     <label>Resolusi<select id="dpi"><option value="8">203 dpi (ZD230 standar)</option><option value="12">300 dpi</option></select></label></div>
   <div class="g3"><label>Lebar (mm)<input id="w" type="number" step="0.5" value="26"></label><label>Tinggi (mm)<input id="h" type="number" step="0.5" value="10"></label><label>Geser kanan (mm)<input id="ox" type="number" step="0.5" value="0"></label></div>
   <div id="yp" style="display:flex;flex-direction:column;gap:10px">
-    <div class="g3"><label>Sayap kiri mulai (mm)<input id="kx" type="number" step="0.5" value="9"></label><label>Sayap kanan mulai (mm)<input id="kn" type="number" step="0.5" value="66"></label><label>Lebar sayap (mm)<input id="sw" type="number" step="0.5" value="21"></label></div>
-    <div class="g3"><label>Mulai dari atas (mm)<input id="sy" type="number" step="0.5" value="2"></label><label>Tinggi sayap (mm)<input id="sh" type="number" step="0.5" value="20"></label><label>Isi sayap kanan<select id="isi2"><option value="info">Kode emas · kadar · berat (disarankan)</option><option value="kosong">Kosong</option><option value="sama">Sama dengan kiri</option></select></label></div>
+    <div class="g3"><label>Label kiri mulai (mm)<input id="kx" type="number" step="0.5" value="9"></label><label>Label kanan mulai (mm)<input id="kn" type="number" step="0.5" value="66"></label><label>Lebar label (mm)<input id="sw" type="number" step="0.5" value="21"></label></div>
+    <div class="g3"><label>Mulai dari atas (mm)<input id="sy" type="number" step="0.5" value="1"></label><label>Tinggi label, dilipat 2 (mm)<input id="sh" type="number" step="0.5" value="22"></label><label>Label kanan<select id="isi2"><option value="sama">Cetak juga (barang sama)</option><option value="kosong">Kosong</option></select></label></div>
     <div class="g2"><label>Sensor kertas<select id="sensor"><option value="N">Abaikan celah (disarankan untuk label 2 sayap)</option><option value="W">Otomatis baca celah</option></select></label><label>Jarak antar label (mm)<input id="pitch" type="number" step="0.5" value="26"></label></div>
     <small>"Jarak antar label" = dari tepi atas sayap satu label ke tepi atas sayap label berikutnya (ukur dengan penggaris).</small>
     <button class="b3" id="garis" disabled>Cetak penggaris (cari posisi sayap)</button>
@@ -1365,7 +1366,7 @@ const dev = () => DEVS[+$('dev').value || 0];
 async function kirim(data) { await req('/write', { method: 'POST', body: JSON.stringify({ device: dev(), data }) }); }
 
 /* simbol Kacaribu 1-bit (lebar x tinggi titik) untuk ^GFA */
-const LOGO = { w: 55, h: 48, bpr: 7, hex: '0000000000000000000EFDE000000000FFFFFE00000003FFFFFF8000000FFEFFFFE000003FF0FC0FF800007F01F801FC0000FC01F8007E0001F803F0003F0003E003E8000F8007C007DC0007C00F800FBC0003E00F001F3E0001E01F003E7E0001F03E007C7F0000F03C00F83F8000783C01F00FC000787807E007C0007C781F8003E0003C7FFF0001F0003C7FFF0000FC003CFFFF00007E001CFFFF80001F001CF01FC0000F801EF007E00007E01EF001F00003FFFCF000F80001FFFC70007C0001FFFC78003E0001FFFC78001F8003F83C78000FC007C03C3C0007E00F80783C0003F03E00783E0001F87C00F81E0001FCF800F01F0000FDF001E00F80007BE003E007C00077C007C007E0006FC00F8003F0001F801F8001F8003F007F0000FE003F01FC00003FC07E07F800001FFEFEFFF0000007FFFFFFC0000001FFFFFF000000003FFEF8000000000000000000' };
+const LOGO = { w: 39, h: 34, bpr: 5, hex: '0000000000000FFFE000007FFFFC0000FF7DFE0003F0781F8007C0F007C00F01E001E01E01F800F01C03FC00703807BC0038380F3E0038701C1F001C70780F801C73F003C01CFFE001E00EFFF000F00EE1F000780EE07C003E0EE01E001FFEE00F000FFEE007801FFC7003C03C1C7001E0781C7800F0E038380079C0381C007F80701E003700F00F002F01E007801E03C003E03C0F8001FC7CFF00007FFFFC00001FFFF0000001380000' };
 /* ---------- tata letak label (dipakai untuk ZPL & pratinjau) ---------- */
 const P128 = ['212222','222122','222221','121223','121322','131222','122213','122312','132212','221213','221312','231212','112232','122132','122231','113222','123122','123221','223211','221132','221231','213212','223112','312131','311222','321122','321221','312212','322112','322211','212123','212321','232121','111323','131123','131321','112313','132113','132311','211313','231113','231311','112133','112331','132131','113123','113321','133121','313121','211331','231131','213113','213311','213131','311123','311321','331121','312113','312311','332111','314111','221411','431111','111224','111422','121124','121421','141122','141221','112214','112412','122114','122411','142112','142211','241211','221114','413111','241112','134111','111242','121142','121241','114212','124112','124211','411212','421112','421211','212141','214121','412121','111143','111341','131141','114113','114311','411113','411311','113141','114131','311141','411131','211412','211214','211232','2331112'];
 function c128(t) { const c = [104]; for (const ch of t) c.push(ch.charCodeAt(0) - 32); let s = 104; c.slice(1).forEach((v, i) => s += v * (i + 1)); c.push(s % 103, 106); return c.map(v => P128[v]).join(''); }
@@ -1377,32 +1378,31 @@ function tataLetak() {
     const mm = v => Math.round(+v * D), bx = mm($('sw').value), by = mm($('sy').value), bh = mm($('sh').value), p2 = Math.round(D * .5);
     /* gaya Kacaribu: sayap depan = nama + kode (barcode/QR) · sayap belakang = kode emas, kadar, berat besar */
     const fit = (t, w, max, k = .56) => Math.max(14, Math.min(max, Math.floor(w / (Math.max(t.length, 4) * k))));
-    const kiri = (x0) => {
-      const iw = bx - 2 * p2, fn = fit(nama, iw, Math.round(2.9 * D), .5), fk = fit(kode, iw, Math.round(2.6 * D), .55);
-      el.push({ t: 'tx', x: x0 + p2, y: by + p2, h: fn, w: iw, d: nama, b: 1 });
-      el.push({ t: 'line', x: x0 + p2, y: by + p2 + Math.round(fn * 1.15), w: iw });
-      const top = by + p2 + Math.round(fn * 1.15) + Math.round(D * .7), bot = by + bh - p2 - fk - Math.round(D * .4);
-      if ($('jenis').value === 'qr') {
-        const mag = Math.max(1, Math.min(8, Math.floor((bot - top) / 21), Math.floor(iw / 21))), qs = 21 * mag;
-        el.push({ t: 'qr', x: x0 + Math.round((bx - qs) / 2), y: top + Math.round((bot - top - qs) / 2), mag, d: kode });
-      } else {
-        const mods = [...c128(kode)].reduce((a, v) => a + +v, 0), mw = Math.max(1, Math.min(3, Math.floor(iw / mods)));
-        el.push({ t: 'bar', x: x0 + Math.max(p2, Math.round((bx - mods * mw) / 2)), y: top, h: Math.max(30, bot - top), mw, d: kode });
-      }
-      el.push({ t: 'tx', x: x0 + p2, y: by + bh - p2 - fk, h: fk, w: iw, d: kode, c: 1 });
+    /* Label dilipat 2: setengah ATAS = depan (nama + barcode + kode) · setengah BAWAH = belakang (kode emas, kadar, netto, brutto, logo) */
+    const gap = Math.round(D * .8), hh = Math.round(bh / 2) - gap, iw = bx - 2 * p2;
+    const depan = (x0, Y) => {
+      const fn = fit(nama, iw, Math.round(2.2 * D), .52), fk = fit(kode, iw, Math.round(2 * D), .55);
+      el.push({ t: 'tx', x: x0 + p2, y: Y, h: fn, w: iw, d: nama, b: 1, c: 1 });
+      const top = Y + Math.round(fn * 1.1), bot = Y + hh - fk - Math.round(D * .2);
+      const mods = [...c128(kode)].reduce((a, v) => a + +v, 0), mw = Math.max(1, Math.min(3, Math.floor(iw / mods)));
+      el.push({ t: 'bar', x: x0 + Math.max(p2, Math.round((bx - mods * mw) / 2)), y: top, h: Math.max(24, bot - top), mw, d: kode });
+      el.push({ t: 'tx', x: x0 + p2, y: Y + hh - fk, h: fk, w: iw, d: kode, c: 1 });
     };
-    const kanan = (x0) => {
-      const iw = bx - 2 * p2, k1 = $('ke').value.trim(), k2 = $('kd').value.trim();
-      const fb = fit(k1, iw * .55, Math.round(5.2 * D), .6), fs = Math.max(16, Math.round(fb * .55));
-      el.push({ t: 'tx', x: x0 + p2, y: by + p2, h: fb, w: Math.round(iw * .6), d: k1, b: 1 });
-      el.push({ t: 'tx', x: x0 + p2 + Math.round(iw * .6), y: by + p2 + Math.round(fb - fs * 1.05), h: fs, w: Math.round(iw * .4), d: k2, c: 1 });
-      el.push({ t: 'line', x: x0 + p2, y: by + p2 + Math.round(fb * 1.12), w: iw });
-      const fw = fit(br, iw, Math.round(4.6 * D), .55);
-      el.push({ t: 'tx', x: x0 + p2, y: by + p2 + Math.round(fb * 1.12) + Math.round(D * .8), h: fw, w: iw, d: br, b: 1 });
-      el.push({ t: 'logo', x: x0 + Math.round((bx - LOGO.w) / 2), y: by + bh - p2 - LOGO.h });
+    const belakang = (x0, Y) => {
+      const k1 = $('ke').value.trim(), k2 = $('kd').value.trim(), bru = $('bb').value.trim();
+      const f1 = Math.max(18, Math.min(Math.round(3.2 * D), Math.round(hh * .36)));
+      el.push({ t: 'tx', x: x0 + p2, y: Y, h: f1, w: Math.round(iw * .55), d: k1, b: 1 });
+      el.push({ t: 'tx', x: x0 + p2 + Math.round(iw * .55), y: Y + Math.round(f1 * .25), h: Math.round(f1 * .75), w: Math.round(iw * .45), d: k2, c: 1 });
+      const yN = Y + Math.round(f1 * 1.08), wN = iw - (bru ? 0 : LOGO.w + 4);
+      const fN = Math.max(16, Math.min(fit('N ' + br, wN, f1, .55), Math.round(hh * (bru ? .3 : .42))));
+      el.push({ t: 'tx', x: x0 + p2, y: yN, h: fN, w: wN, d: 'N ' + br, b: 1 });
+      if (bru) { const tB = 'B ' + bru + ' gr', wB = iw - LOGO.w - 4, fB = Math.max(14, Math.min(fit(tB, wB, fN, .55), Math.round(fN * .85)));
+        el.push({ t: 'tx', x: x0 + p2, y: Y + hh - fB, h: fB, w: wB, d: tB }); }
+      el.push({ t: 'logo', x: x0 + bx - p2 - LOGO.w, y: Y + hh - LOGO.h });
     };
-    kiri(mm($('kx').value));
-    if ($('isi2').value === 'info') kanan(mm($('kn').value)); else if ($('isi2').value === 'sama') kiri(mm($('kn').value));
+    const satu = x0 => { depan(x0, by); belakang(x0, by + Math.round(bh / 2) + gap); el.push({ t: 'fold', x: x0, y: by + Math.round(bh / 2), w: bx }); };
+    satu(mm($('kx').value));
+    if ($('isi2').value === 'sama') satu(mm($('kn').value));
     return { D, W: Math.round(Math.max(+$('w').value, +$('kn').value + +$('sw').value + 1) * D), H, OX, qty, el, sayap: [[mm($('kx').value), by, bx, bh], [mm($('kn').value), by, bx, bh]] };
   }
   if ($('jenis').value === 'qr') {
@@ -1445,6 +1445,7 @@ function pratinjau() {
       for (let r = 0; r < n; r++) for (let c = 0; c < n; c++) if (q.isDark(r, c)) x.fillRect(e.x + c * e.mag, e.y + r * e.mag, e.mag, e.mag); }
     if (e.t === 'tx') { x.save(); x.beginPath(); x.rect(e.x, e.y, e.w, e.h * 1.2); x.clip(); x.font = `${e.b ? '700 ' : ''}${e.h}px "Arial Narrow", Arial, sans-serif`; const dd = e.sp ? e.d.split('').join(' ') : e.d; e = Object.assign({}, e, { d: dd }); if (e.c) { x.textAlign = 'center'; x.fillText(e.d, e.x + e.w / 2, e.y); x.textAlign = 'left'; } else x.fillText(e.d, e.x, e.y); x.restore(); }
     if (e.t === 'line') x.fillRect(e.x, e.y, e.w, 2);
+    if (e.t === 'fold') { x.save(); x.strokeStyle = '#A12A47'; x.setLineDash([3, 3]); x.beginPath(); x.moveTo(e.x, e.y); x.lineTo(e.x + e.w, e.y); x.stroke(); x.restore(); }
     if (e.t === 'logo') for (let r = 0; r < LOGO.h; r++) for (let c = 0; c < LOGO.w; c++) { const by = parseInt(LOGO.hex.substr((r * LOGO.bpr + (c >> 3)) * 2, 2), 16); if (by & (0x80 >> (c & 7))) x.fillRect(e.x + c, e.y + r, 1, 1); }
     if (e.t === 'bar') { let xx = e.x; [...c128(e.d)].forEach((v, i) => { const w = +v * e.mw; if (i % 2 === 0) x.fillRect(xx, e.y, w, e.h); xx += w; }); }
   });
@@ -1453,7 +1454,7 @@ function pratinjau() {
   if (L.sayap) { x.strokeStyle = '#1A73E8'; L.sayap.forEach(b => x.strokeRect(L.OX + b[0] + .5, b[1] + .5, b[2] - 1, b[3] - 1)); }
   const sc = Math.max(1, Math.floor(440 / cv.width));
   $('pv').innerHTML = ''; cv.style.width = Math.min(cv.width * sc, 440) + 'px'; cv.style.maxWidth = '100%'; cv.style.imageRendering = 'auto'; cv.style.imageRendering = 'pixelated'; cv.style.boxShadow = '0 4px 12px rgba(0,0,0,.18)'; $('pv').appendChild(cv);
-  $('pv').insertAdjacentHTML('beforeend', `<small style="display:block;margin-top:8px;text-align:center">Garis putus-putus emas = batas label (tidak ikut tercetak)</small>`);
+  $('pv').insertAdjacentHTML('beforeend', `<small style="display:block;margin-top:8px;text-align:center">Garis emas = batas · garis merah = garis lipat (tidak ikut tercetak)</small>`);
 }
 
 $('pre').onchange = () => { const v = $('pre').value; $('yp').style.display = v === 'yupo' ? 'flex' : 'none';
@@ -1466,7 +1467,7 @@ function penggaris() {
   return z + '^PQ1^XZ';
 }
 $('garis').onclick = async () => { try { await kirim(penggaris()); st('Penggaris dicetak ✓ — foto hasilnya untuk menentukan posisi sayap', 'ok'); } catch (e) { st('Gagal: ' + e.message, 'err'); } };
-['kx', 'kn', 'sw', 'sy', 'sh', 'isi2', 'sensor', 'pitch', 'kode', 'nama', 'ke', 'kd', 'br', 'jenis', 'qty', 'dpi', 'w', 'h', 'ox'].forEach(id => $(id).addEventListener('input', pratinjau));
+['kx', 'kn', 'sw', 'sy', 'sh', 'isi2', 'sensor', 'pitch', 'kode', 'nama', 'ke', 'kd', 'br', 'bb', 'jenis', 'qty', 'dpi', 'w', 'h', 'ox'].forEach(id => $(id).addEventListener('input', pratinjau));
 $('cari').onclick = cari;
 $('cetak').onclick = async () => { $('cetak').disabled = true; try { await kirim(zpl()); st('Terkirim ke printer ✓', 'ok'); } catch (e) { st('Gagal mencetak: ' + e.message, 'err'); } $('cetak').disabled = false; };
 $('kal').onclick = async () => { try { await kirim('~JC'); st('Kalibrasi dikirim — printer akan mengeluarkan beberapa label kosong.', 'ok'); } catch (e) { st('Gagal: ' + e.message, 'err'); } };
