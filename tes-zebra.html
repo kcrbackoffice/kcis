@@ -59,12 +59,12 @@ ol{margin:0;padding-left:20px;font-size:14px;line-height:1.6}
 <section class="card">
   <b>4 · Posisi label (sudah disetel dari hasil tes)</b>
   <div class="g3"><label>Label kiri mulai (mm)<input id="kx" type="number" step="0.5" value="9"></label><label>Label kanan mulai (mm)<input id="kn" type="number" step="0.5" value="66"></label><label>Lebar label (mm)<input id="sw" type="number" step="0.5" value="21"></label></div>
-  <div class="g3"><label>Mulai dari atas (mm)<input id="sy" type="number" step="0.5" value="1"></label><label>Tinggi label (mm)<input id="sh" type="number" step="0.5" value="22"></label><label>Jarak antar baris (mm)<input id="pitch" type="number" step="0.1" value="25.4"></label></div>
+  <div class="g3"><label>Mulai dari atas (mm)<input id="sy" type="number" step="0.5" value="1"></label><label>Tinggi label (mm)<input id="sh" type="number" step="0.5" value="22"></label><label>Jarak antar baris (mm)<input id="pitch" type="number" step="0.05" value="25.4"></label></div>
   <div class="g2"><label>Geser naik/turun (mm)<input id="vy" type="number" step="0.5" value="-2"></label><label>Geser kanan/kiri (mm)<input id="vx" type="number" step="0.5" value="0"></label></div>
   <small>Plus = turun / ke kanan, minus = naik / ke kiri. Ubah 0,5 mm per kali coba.</small>
-  <div class="g2"><label>Sensor kertas<select id="sensor"><option value="W">Otomatis baca celah (tidak bergeser)</option><option value="N">Abaikan celah (cadangan)</option></select></label>
-  <button class="b1" id="kal" disabled style="align-self:end">Kalibrasi otomatis</button></div>
-  <small><b>Otomatis</b>: printer mencari awal tiap label sendiri, jadi posisi tidak makin bergeser. Tekan <b>Kalibrasi otomatis</b> sekali setiap ganti gulungan. Kalau hasilnya kacau (cetak terpotong / loncat), pakai <b>Abaikan celah</b>.</small>
+  <div class="g2"><label>Sensor kertas<select id="sensor"><option value="N">Jarak tetap (cocok untuk label ini)</option><option value="W">Baca celah (tidak cocok: label saling mengait)</option></select></label>
+  <button class="b1" id="kal" disabled style="align-self:end">Cetak garis tes jarak (6 baris)</button></div>
+  <small><b>Garis tes jarak</b>: mencetak 1 garis tipis di tepi atas kotak label, 6 baris berturut-turut. Kalau garis makin <b>turun</b> tiap baris → kecilkan <i>Jarak antar baris</i>; makin <b>naik</b> → besarkan. Geser 0,1 mm per kali coba. Kalau semua garis menempel di tepi atas, jaraknya sudah pas.</small>
   <div class="g2"><button class="b3" id="kotak" disabled>Cetak kotak bantu</button><button class="b3" id="maju" disabled>Maju 1 baris (kosong)</button></div>
   <small><b>Kotak bantu</b> mencetak garis tepi tiap label + garis lipat, supaya kelihatan apakah posisi sudah pas di label fisik.</small>
 </section>
@@ -127,7 +127,7 @@ function labelEl(b, x0) {
   /* DEPAN (setengah atas) */
   const A = by + my, A2 = by + half - mf;                       // area tulis: A..A2
   const fn = Math.max(12, Math.min(17, Math.floor(iw / (Math.max(b.nama.length, 4) * .52)))), fk = 16;
-  el.push({ t: 'tx', x: L0, y: A, h: fn, w: iw, d: b.nama, b: 1, c: 1 });
+  el.push({ t: 'tx', x: L0, y: A, h: fn, w: iw, d: b.nama, c: 1 });
   el.push({ t: 'tx', x: L0, y: A2 - fk, h: fk, w: iw, d: b.kode, c: 1 });
   const top = A + fn + mm(.5), bot = A2 - fk - mm(.4), mods = [...c128(b.kode)].reduce((a, v) => a + +v, 0), mw = Math.max(1, Math.min(3, Math.floor(iw / mods)));
   el.push({ t: 'bar', x: x0 + Math.round((bx - mods * mw) / 2), y: top, h: Math.max(20, bot - top), mw, d: b.kode });
@@ -214,7 +214,13 @@ function pratinjau() {
 /* ---------- tombol ---------- */
 $('cari').onclick = cari;
 /* kalibrasi: set mode baca celah + panjang label, simpan, lalu ~JC (printer maju beberapa label untuk mengukur) */
-$('kal').onclick = async () => { try { await kirim(`^XA^MNW^PW${mm(104)}^LL${mm($('pitch').value)}^JUS^XZ`); await kirim('~JC'); $('sensor').value = 'W'; st('Kalibrasi dikirim — printer akan maju beberapa label kosong, tunggu sampai berhenti.', 'ok'); } catch (e) { st('Gagal: ' + e.message, 'err'); } };
+$('kal').onclick = async () => { try {
+  $('sensor').value = 'N';
+  await kirim(`^XA^MNN^PW${mm(104)}^LL${mm($('pitch').value)}^JUS^XZ`); // simpan mode jarak tetap di printer (membatalkan kalibrasi baca-celah sebelumnya)
+  const by = mm($('sy').value), bx = mm($('sw').value), el = [];
+  [mm($('kx').value), mm($('kn').value)].forEach(x0 => el.push({ t: 'box', x: x0, y: by, w: bx, h: 1 }));
+  await kirim(kepala() + zplEl(el) + '^PQ6^XZ'); st('6 garis tes dicetak ✓ — lihat apakah garis tetap di tepi atas label.', 'ok');
+} catch (e) { st('Gagal: ' + e.message, 'err'); } };
 $('tambah').onclick = () => { baris(); pratinjau(); };
 $('cetak').onclick = async () => { const b = $('cetak'); b.disabled = true; try { const pages = zpl().split('\n'); for (let i = 0; i < pages.length; i++) { st(`Mencetak baris ${i + 1}/${pages.length}…`); await kirim(pages[i]); } st('Semua label terkirim ✓', 'ok'); } catch (e) { st('Gagal mencetak: ' + e.message, 'err'); } b.disabled = false; };
 $('kotak').onclick = async () => { try { await kirim(zplKotak()); st('Kotak bantu dicetak ✓', 'ok'); } catch (e) { st('Gagal: ' + e.message, 'err'); } };
