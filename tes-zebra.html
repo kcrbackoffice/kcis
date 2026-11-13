@@ -7,1474 +7,214 @@
 :root{--m:#5E1622;--g:#C68B1E;--bg:#FBF7F3;--tx:#241418;--mu:#7E6C71;--ln:#EADDE0}
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--tx);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
-main{max-width:980px;margin:0 auto;padding:20px 16px 40px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px}
-@media (max-width:760px){main{grid-template-columns:1fr}}
+main{max-width:1040px;margin:0 auto;padding:20px 16px 40px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px}
+@media (max-width:820px){main{grid-template-columns:1fr}}
 h1{grid-column:1/-1;margin:0;font-size:26px;color:var(--m)}
 .card{background:#fff;border-radius:18px;padding:16px;box-shadow:0 10px 26px -18px rgba(94,22,34,.5);display:flex;flex-direction:column;gap:10px}
+.wide{grid-column:1/-1}
 .st{font-size:14px;font-weight:600;padding:10px 12px;border-radius:12px;background:#F6EEEF}
 .st.ok{background:#E3F6EC;color:#1D6B45}.st.err{background:#FDE9ED;color:#A12A47}
 button{font:inherit;font-size:15px;font-weight:700;border:0;border-radius:12px;padding:12px;cursor:pointer}
 .b1{background:var(--m);color:#fff}.b2{background:linear-gradient(140deg,#FFE9A3,#F2C24F 40%,#C68B1E);color:#3E0A15}.b3{background:#fff;border:1.5px solid var(--ln);color:var(--tx)}
 button:disabled{opacity:.45;cursor:default}
 label{font-size:13px;font-weight:700;color:var(--mu);display:flex;flex-direction:column;gap:4px}
-input,select{font:inherit;font-size:15px;font-weight:600;color:var(--tx);padding:9px 10px;border-radius:10px;border:1.5px solid var(--ln);width:100%}
+input,select{font:inherit;font-size:15px;font-weight:600;color:var(--tx);padding:8px 10px;border-radius:10px;border:1.5px solid var(--ln);width:100%;min-width:0}
 .g2{display:grid;grid-template-columns:1fr 1fr;gap:10px}.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
 small{color:var(--mu);font-size:13px;line-height:1.45}
-#pv{background:repeating-conic-gradient(#f4f0ec 0 25%,#fff 0 50%) 0 0/16px 16px;border-radius:12px;min-height:140px;display:grid;place-items:center;padding:12px}
-#pv img{max-width:100%;image-rendering:pixelated;box-shadow:0 4px 12px rgba(0,0,0,.18);background:#fff}
-pre{white-space:pre-wrap;word-break:break-all;font-size:12px;background:#F6F2EF;border-radius:10px;padding:10px;margin:0;max-height:160px;overflow:auto}
+table{width:100%;border-collapse:collapse}th{font-size:12px;color:var(--mu);text-align:left;padding:4px}td{padding:3px}
+td input{padding:7px 8px;font-size:14px}
+.x{background:#F6EEEF;border-radius:8px;padding:6px 10px;font-size:14px}
+#pv{background:#EFEAE5;border-radius:12px;padding:12px;display:flex;flex-direction:column;gap:8px;align-items:center}
+#pv canvas{max-width:100%;box-shadow:0 4px 12px rgba(0,0,0,.18);background:#fff}
 ol{margin:0;padding-left:20px;font-size:14px;line-height:1.6}
 </style></head>
 <body><main>
-<h1>Tes cetak label Zebra (ZD230)</h1>
+<h1>Tes label perhiasan Yupo 80 × 24 mm</h1>
 
 <section class="card">
   <b>1 · Sambungkan printer</b>
   <div id="st" class="st">Belum tersambung</div>
   <button class="b1" id="cari">Cari printer Zebra</button>
   <select id="dev" style="display:none"></select>
-  <small>Butuh aplikasi gratis <b>Zebra Browser Print</b> yang sedang berjalan di laptop ini.</small>
   <details><summary style="cursor:pointer;font-weight:700;font-size:14px">Kalau gagal tersambung</summary>
-  <ol>
-    <li>Pastikan ikon Zebra Browser Print muncul di pojok kanan bawah (system tray).</li>
-    <li>Buka <a href="https://localhost:9101/ssl_support" target="_blank" rel="noopener">https://localhost:9101/ssl_support</a> → klik <b>Advanced → Proceed</b>, lalu kembali ke sini dan tekan Cari lagi.</li>
-    <li>Kalau Browser Print menanyakan izin untuk situs ini, pilih <b>Yes / Allow</b>.</li>
-  </ol></details>
+  <ol><li>Pastikan Zebra Browser Print berjalan (ikon di pojok kanan bawah).</li>
+  <li>Buka <a href="https://localhost:9101/ssl_support" target="_blank" rel="noopener">https://localhost:9101/ssl_support</a> → Advanced → Proceed, lalu kembali & Cari lagi.</li>
+  <li>Jika diminta izin untuk situs ini, pilih Yes / Allow.</li></ol></details>
 </section>
 
 <section class="card">
-  <b>2 · Data barang (contoh dari KCIS)</b>
-  <div class="g2"><label>Kode barang<input id="kode" value="KC00412"></label><label>Nama<input id="nama" value="Kalung Rantai Italy"></label></div>
-  <div class="g3"><label>Kode emas<input id="ke" value="17K"></label><label>Kadar<input id="kd" value="75%"></label><label>Berat netto (gr)<input id="br" value="5,20"></label></div>
-  <div class="g2"><label>Berat brutto (gr, opsional)<input id="bb" value="5,26" placeholder="kosongkan bila tidak perlu"></label><small style="align-self:end">Netto = berat emas saja · Brutto = emas + label/tali. Kosongkan brutto kalau tidak ingin dicetak.</small></div>
-  <div class="g2"><label>Jenis kode<select id="jenis"><option value="bar">Barcode garis</option></select></label><label>Jumlah label<input id="qty" type="number" min="1" max="50" value="1"></label></div>
+  <b>2 · Ketebalan cetak</b>
+  <div class="g2"><label>Kegelapan (0–30)<input id="dark" type="number" min="0" max="30" value="25"></label>
+  <label>Kecepatan<select id="spd"><option value="2">Pelan (paling tebal)</option><option value="3">Sedang</option><option value="4">Cepat</option></select></label></div>
+  <label>Jenis cetak<select id="mt"><option value="">Ikuti setelan printer (disarankan dulu)</option><option value="T">Pakai pita / ribbon (thermal transfer)</option><option value="D">Tanpa pita (direct thermal)</option></select></label>
+  <small>Kalau tulisan pudar: naikkan kegelapan (25 → 28), pakai kecepatan Pelan, dan pastikan jenis cetak sesuai printer (ada pita atau tidak).</small>
+</section>
+
+<section class="card wide">
+  <b>3 · Daftar barang · 1 label = 1 barang (kiri barang 1, kanan barang 2, baris berikutnya barang 3 & 4, dst.)</b>
+  <table><thead><tr><th style="width:15%">Kode</th><th>Nama barang</th><th style="width:9%">Kode emas</th><th style="width:9%">Kadar</th><th style="width:10%">Netto (gr)</th><th style="width:10%">Brutto (opsional)</th><th style="width:4%"></th></tr></thead><tbody id="rows"></tbody></table>
+  <div><button class="b3" id="tambah" style="width:auto;padding:9px 14px">+ Tambah barang</button></div>
 </section>
 
 <section class="card">
-  <b>3 · Ukuran label</b>
-  <div class="g2"><label>Preset<select id="pre">
-    <option value="yupo">Label perhiasan Yupo 80 × 24 mm (2 sayap)</option>
-    <option value="26,10,0">Ekor perhiasan · area cetak 26 × 10 mm</option>
-    <option value="40,20,0">Label 40 × 20 mm</option>
-    <option value="50,25,0">Label 50 × 25 mm</option>
-    <option value="custom">Atur sendiri</option></select></label>
-    <label>Resolusi<select id="dpi"><option value="8">203 dpi (ZD230 standar)</option><option value="12">300 dpi</option></select></label></div>
-  <div class="g3"><label>Lebar (mm)<input id="w" type="number" step="0.5" value="26"></label><label>Tinggi (mm)<input id="h" type="number" step="0.5" value="10"></label><label>Geser kanan (mm)<input id="ox" type="number" step="0.5" value="0"></label></div>
-  <div id="yp" style="display:flex;flex-direction:column;gap:10px">
-    <div class="g3"><label>Label kiri mulai (mm)<input id="kx" type="number" step="0.5" value="9"></label><label>Label kanan mulai (mm)<input id="kn" type="number" step="0.5" value="66"></label><label>Lebar label (mm)<input id="sw" type="number" step="0.5" value="21"></label></div>
-    <div class="g3"><label>Mulai dari atas (mm)<input id="sy" type="number" step="0.5" value="1"></label><label>Tinggi label, dilipat 2 (mm)<input id="sh" type="number" step="0.5" value="22"></label><label>Label kanan<select id="isi2"><option value="sama">Cetak juga (barang sama)</option><option value="kosong">Kosong</option></select></label></div>
-    <div class="g2"><label>Sensor kertas<select id="sensor"><option value="N">Abaikan celah (disarankan untuk label lipat)</option><option value="W">Otomatis baca celah</option></select></label><label>Jarak antar label (mm)<input id="pitch" type="number" step="0.1" value="25.4"></label></div>
-    <small>"Jarak antar label" = dari tepi atas sayap satu label ke tepi atas sayap label berikutnya (ukur dengan penggaris).</small>
-    <div class="g2"><label>Geser naik/turun (mm)<input id="vy" type="number" step="0.5" value="-2"></label><small style="align-self:end">Minus = naik, plus = turun. Isi kalau tulisan terlalu ke bawah/atas.</small></div>
-    <div class="g2"><button class="b3" id="garis" disabled>Cetak penggaris</button><button class="b3" id="maju" disabled>Maju 1 label (kosong)</button></div>
-    <small>Cetak penggaris sekali: angka di label = posisi dalam mm dari kiri. Lihat angka berapa sayap kiri & kanan dimulai, isi di kolom atas, lalu cetak label.</small>
-  </div>
-  <small>Ukur bagian label yang <b>tercetak</b>. Kalau hasil cetak bergeser, atur "Geser kanan".</small>
+  <b>4 · Posisi label (sudah disetel dari hasil tes)</b>
+  <div class="g3"><label>Label kiri mulai (mm)<input id="kx" type="number" step="0.5" value="9"></label><label>Label kanan mulai (mm)<input id="kn" type="number" step="0.5" value="66"></label><label>Lebar label (mm)<input id="sw" type="number" step="0.5" value="21"></label></div>
+  <div class="g3"><label>Mulai dari atas (mm)<input id="sy" type="number" step="0.5" value="1"></label><label>Tinggi label (mm)<input id="sh" type="number" step="0.5" value="22"></label><label>Jarak antar baris (mm)<input id="pitch" type="number" step="0.1" value="25.4"></label></div>
+  <div class="g2"><label>Geser naik/turun (mm)<input id="vy" type="number" step="0.5" value="-2"></label><label>Geser kanan/kiri (mm)<input id="vx" type="number" step="0.5" value="0"></label></div>
+  <small>Plus = turun / ke kanan, minus = naik / ke kiri. Ubah 0,5 mm per kali coba.</small>
+  <div class="g2"><button class="b3" id="kotak" disabled>Cetak kotak bantu</button><button class="b3" id="maju" disabled>Maju 1 baris (kosong)</button></div>
+  <small><b>Kotak bantu</b> mencetak garis tepi tiap label + garis lipat, supaya kelihatan apakah posisi sudah pas di label fisik.</small>
 </section>
 
 <section class="card">
-  <b>4 · Pratinjau &amp; cetak</b>
+  <b>5 · Pratinjau &amp; cetak</b>
   <div id="pv"></div>
-  <div class="g2"><button class="b2" id="cetak" disabled>Cetak label</button><button class="b3" id="kal" disabled>Kalibrasi kertas</button></div>
-  <small>"Kalibrasi" dipakai sekali saat ganti gulungan label, supaya printer tahu batas tiap label.</small>
-  <details><summary style="cursor:pointer;font-size:13px;color:var(--mu)">Kode ZPL yang dikirim</summary><pre id="zpl"></pre></details>
+  <button class="b2" id="cetak" disabled>Cetak semua label</button>
+  <small>Sebelum cetak: tepi atas satu label sejajar garis sobek printer.</small>
+  <details><summary style="cursor:pointer;font-size:13px;color:var(--mu)">Kode ZPL yang dikirim</summary><pre id="zpl" style="white-space:pre-wrap;word-break:break-all;font-size:11px;max-height:160px;overflow:auto"></pre></details>
 </section>
 </main>
 <script>
-var QRLIB=(function(){var defs={'./QRErrorCorrectLevel':function(module,exports,require){
-module.exports = {
-	L : 1,
-	M : 0,
-	Q : 3,
-	H : 2
-};
-
-
-},
-'./QRPolynomial':function(module,exports,require){
-var QRMath = require('./QRMath');
-
-function QRPolynomial(num, shift) {
-	if (num.length === undefined) {
-		throw new Error(num.length + "/" + shift);
-	}
-
-	var offset = 0;
-
-	while (offset < num.length && num[offset] === 0) {
-		offset++;
-	}
-
-	this.num = new Array(num.length - offset + shift);
-	for (var i = 0; i < num.length - offset; i++) {
-		this.num[i] = num[i + offset];
-	}
-}
-
-QRPolynomial.prototype = {
-
-	get : function(index) {
-		return this.num[index];
-	},
-	
-	getLength : function() {
-		return this.num.length;
-	},
-	
-	multiply : function(e) {
-	
-		var num = new Array(this.getLength() + e.getLength() - 1);
-	
-		for (var i = 0; i < this.getLength(); i++) {
-			for (var j = 0; j < e.getLength(); j++) {
-				num[i + j] ^= QRMath.gexp(QRMath.glog(this.get(i) ) + QRMath.glog(e.get(j) ) );
-			}
-		}
-	
-		return new QRPolynomial(num, 0);
-	},
-	
-	mod : function(e) {
-	
-		if (this.getLength() - e.getLength() < 0) {
-			return this;
-		}
-	
-		var ratio = QRMath.glog(this.get(0) ) - QRMath.glog(e.get(0) );
-	
-		var num = new Array(this.getLength() );
-		
-		for (var i = 0; i < this.getLength(); i++) {
-			num[i] = this.get(i);
-		}
-		
-		for (var x = 0; x < e.getLength(); x++) {
-			num[x] ^= QRMath.gexp(QRMath.glog(e.get(x) ) + ratio);
-		}
-	
-		// recursive call
-		return new QRPolynomial(num, 0).mod(e);
-	}
-};
-
-module.exports = QRPolynomial;
-
-},
-'./QRMaskPattern':function(module,exports,require){
-module.exports = {
-	PATTERN000 : 0,
-	PATTERN001 : 1,
-	PATTERN010 : 2,
-	PATTERN011 : 3,
-	PATTERN100 : 4,
-	PATTERN101 : 5,
-	PATTERN110 : 6,
-	PATTERN111 : 7
-};
-
-},
-'./QRMode':function(module,exports,require){
-module.exports = {
-    MODE_NUMBER :       1 << 0,
-    MODE_ALPHA_NUM :    1 << 1,
-    MODE_8BIT_BYTE :    1 << 2,
-    MODE_KANJI :        1 << 3
-};
-
-},
-'./QRUtil':function(module,exports,require){
-var QRMode = require('./QRMode');
-var QRPolynomial = require('./QRPolynomial');
-var QRMath = require('./QRMath');
-var QRMaskPattern = require('./QRMaskPattern');
-
-var QRUtil = {
-
-    PATTERN_POSITION_TABLE : [
-        [],
-        [6, 18],
-        [6, 22],
-        [6, 26],
-        [6, 30],
-        [6, 34],
-        [6, 22, 38],
-        [6, 24, 42],
-        [6, 26, 46],
-        [6, 28, 50],
-        [6, 30, 54],        
-        [6, 32, 58],
-        [6, 34, 62],
-        [6, 26, 46, 66],
-        [6, 26, 48, 70],
-        [6, 26, 50, 74],
-        [6, 30, 54, 78],
-        [6, 30, 56, 82],
-        [6, 30, 58, 86],
-        [6, 34, 62, 90],
-        [6, 28, 50, 72, 94],
-        [6, 26, 50, 74, 98],
-        [6, 30, 54, 78, 102],
-        [6, 28, 54, 80, 106],
-        [6, 32, 58, 84, 110],
-        [6, 30, 58, 86, 114],
-        [6, 34, 62, 90, 118],
-        [6, 26, 50, 74, 98, 122],
-        [6, 30, 54, 78, 102, 126],
-        [6, 26, 52, 78, 104, 130],
-        [6, 30, 56, 82, 108, 134],
-        [6, 34, 60, 86, 112, 138],
-        [6, 30, 58, 86, 114, 142],
-        [6, 34, 62, 90, 118, 146],
-        [6, 30, 54, 78, 102, 126, 150],
-        [6, 24, 50, 76, 102, 128, 154],
-        [6, 28, 54, 80, 106, 132, 158],
-        [6, 32, 58, 84, 110, 136, 162],
-        [6, 26, 54, 82, 110, 138, 166],
-        [6, 30, 58, 86, 114, 142, 170]
-    ],
-
-    G15 : (1 << 10) | (1 << 8) | (1 << 5) | (1 << 4) | (1 << 2) | (1 << 1) | (1 << 0),
-    G18 : (1 << 12) | (1 << 11) | (1 << 10) | (1 << 9) | (1 << 8) | (1 << 5) | (1 << 2) | (1 << 0),
-    G15_MASK : (1 << 14) | (1 << 12) | (1 << 10)    | (1 << 4) | (1 << 1),
-
-    getBCHTypeInfo : function(data) {
-        var d = data << 10;
-        while (QRUtil.getBCHDigit(d) - QRUtil.getBCHDigit(QRUtil.G15) >= 0) {
-            d ^= (QRUtil.G15 << (QRUtil.getBCHDigit(d) - QRUtil.getBCHDigit(QRUtil.G15) ) );    
-        }
-        return ( (data << 10) | d) ^ QRUtil.G15_MASK;
-    },
-
-    getBCHTypeNumber : function(data) {
-        var d = data << 12;
-        while (QRUtil.getBCHDigit(d) - QRUtil.getBCHDigit(QRUtil.G18) >= 0) {
-            d ^= (QRUtil.G18 << (QRUtil.getBCHDigit(d) - QRUtil.getBCHDigit(QRUtil.G18) ) );    
-        }
-        return (data << 12) | d;
-    },
-
-    getBCHDigit : function(data) {
-
-        var digit = 0;
-
-        while (data !== 0) {
-            digit++;
-            data >>>= 1;
-        }
-
-        return digit;
-    },
-
-    getPatternPosition : function(typeNumber) {
-        return QRUtil.PATTERN_POSITION_TABLE[typeNumber - 1];
-    },
-
-    getMask : function(maskPattern, i, j) {
-        
-        switch (maskPattern) {
-            
-        case QRMaskPattern.PATTERN000 : return (i + j) % 2 === 0;
-        case QRMaskPattern.PATTERN001 : return i % 2 === 0;
-        case QRMaskPattern.PATTERN010 : return j % 3 === 0;
-        case QRMaskPattern.PATTERN011 : return (i + j) % 3 === 0;
-        case QRMaskPattern.PATTERN100 : return (Math.floor(i / 2) + Math.floor(j / 3) ) % 2 === 0;
-        case QRMaskPattern.PATTERN101 : return (i * j) % 2 + (i * j) % 3 === 0;
-        case QRMaskPattern.PATTERN110 : return ( (i * j) % 2 + (i * j) % 3) % 2 === 0;
-        case QRMaskPattern.PATTERN111 : return ( (i * j) % 3 + (i + j) % 2) % 2 === 0;
-
-        default :
-            throw new Error("bad maskPattern:" + maskPattern);
-        }
-    },
-
-    getErrorCorrectPolynomial : function(errorCorrectLength) {
-
-        var a = new QRPolynomial([1], 0);
-
-        for (var i = 0; i < errorCorrectLength; i++) {
-            a = a.multiply(new QRPolynomial([1, QRMath.gexp(i)], 0) );
-        }
-
-        return a;
-    },
-
-    getLengthInBits : function(mode, type) {
-
-        if (1 <= type && type < 10) {
-
-            // 1 - 9
-
-            switch(mode) {
-            case QRMode.MODE_NUMBER     : return 10;
-            case QRMode.MODE_ALPHA_NUM  : return 9;
-            case QRMode.MODE_8BIT_BYTE  : return 8;
-            case QRMode.MODE_KANJI      : return 8;
-            default :
-                throw new Error("mode:" + mode);
-            }
-
-        } else if (type < 27) {
-
-            // 10 - 26
-
-            switch(mode) {
-            case QRMode.MODE_NUMBER     : return 12;
-            case QRMode.MODE_ALPHA_NUM  : return 11;
-            case QRMode.MODE_8BIT_BYTE  : return 16;
-            case QRMode.MODE_KANJI      : return 10;
-            default :
-                throw new Error("mode:" + mode);
-            }
-
-        } else if (type < 41) {
-
-            // 27 - 40
-
-            switch(mode) {
-            case QRMode.MODE_NUMBER     : return 14;
-            case QRMode.MODE_ALPHA_NUM  : return 13;
-            case QRMode.MODE_8BIT_BYTE  : return 16;
-            case QRMode.MODE_KANJI      : return 12;
-            default :
-                throw new Error("mode:" + mode);
-            }
-
-        } else {
-            throw new Error("type:" + type);
-        }
-    },
-
-    getLostPoint : function(qrCode) {
-        
-        var moduleCount = qrCode.getModuleCount();
-        var lostPoint = 0;
-        var row = 0; 
-        var col = 0;
-
-        
-        // LEVEL1
-        
-        for (row = 0; row < moduleCount; row++) {
-
-            for (col = 0; col < moduleCount; col++) {
-
-                var sameCount = 0;
-                var dark = qrCode.isDark(row, col);
-
-                for (var r = -1; r <= 1; r++) {
-
-                    if (row + r < 0 || moduleCount <= row + r) {
-                        continue;
-                    }
-
-                    for (var c = -1; c <= 1; c++) {
-
-                        if (col + c < 0 || moduleCount <= col + c) {
-                            continue;
-                        }
-
-                        if (r === 0 && c === 0) {
-                            continue;
-                        }
-
-                        if (dark === qrCode.isDark(row + r, col + c) ) {
-                            sameCount++;
-                        }
-                    }
-                }
-
-                if (sameCount > 5) {
-                    lostPoint += (3 + sameCount - 5);
-                }
-            }
-        }
-
-        // LEVEL2
-
-        for (row = 0; row < moduleCount - 1; row++) {
-            for (col = 0; col < moduleCount - 1; col++) {
-                var count = 0;
-                if (qrCode.isDark(row,     col    ) ) count++;
-                if (qrCode.isDark(row + 1, col    ) ) count++;
-                if (qrCode.isDark(row,     col + 1) ) count++;
-                if (qrCode.isDark(row + 1, col + 1) ) count++;
-                if (count === 0 || count === 4) {
-                    lostPoint += 3;
-                }
-            }
-        }
-
-        // LEVEL3
-
-        for (row = 0; row < moduleCount; row++) {
-            for (col = 0; col < moduleCount - 6; col++) {
-                if (qrCode.isDark(row, col) && 
-                        !qrCode.isDark(row, col + 1) && 
-                         qrCode.isDark(row, col + 2) && 
-                         qrCode.isDark(row, col + 3) && 
-                         qrCode.isDark(row, col + 4) && 
-                        !qrCode.isDark(row, col + 5) && 
-                         qrCode.isDark(row, col + 6) ) {
-                    lostPoint += 40;
-                }
-            }
-        }
-
-        for (col = 0; col < moduleCount; col++) {
-            for (row = 0; row < moduleCount - 6; row++) {
-                if (qrCode.isDark(row, col) &&
-                        !qrCode.isDark(row + 1, col) &&
-                         qrCode.isDark(row + 2, col) &&
-                         qrCode.isDark(row + 3, col) &&
-                         qrCode.isDark(row + 4, col) &&
-                        !qrCode.isDark(row + 5, col) &&
-                         qrCode.isDark(row + 6, col) ) {
-                    lostPoint += 40;
-                }
-            }
-        }
-
-        // LEVEL4
-        
-        var darkCount = 0;
-
-        for (col = 0; col < moduleCount; col++) {
-            for (row = 0; row < moduleCount; row++) {
-                if (qrCode.isDark(row, col) ) {
-                    darkCount++;
-                }
-            }
-        }
-        
-        var ratio = Math.abs(100 * darkCount / moduleCount / moduleCount - 50) / 5;
-        lostPoint += ratio * 10;
-
-        return lostPoint;       
-    }
-
-};
-
-module.exports = QRUtil;
-
-},
-'./QRMath':function(module,exports,require){
-var QRMath = {
-
-	glog : function(n) {
-	
-		if (n < 1) {
-			throw new Error("glog(" + n + ")");
-		}
-		
-		return QRMath.LOG_TABLE[n];
-	},
-	
-	gexp : function(n) {
-	
-		while (n < 0) {
-			n += 255;
-		}
-	
-		while (n >= 256) {
-			n -= 255;
-		}
-	
-		return QRMath.EXP_TABLE[n];
-	},
-	
-	EXP_TABLE : new Array(256),
-	
-	LOG_TABLE : new Array(256)
-
-};
-	
-for (var i = 0; i < 8; i++) {
-	QRMath.EXP_TABLE[i] = 1 << i;
-}
-for (var i = 8; i < 256; i++) {
-	QRMath.EXP_TABLE[i] = QRMath.EXP_TABLE[i - 4]
-		^ QRMath.EXP_TABLE[i - 5]
-		^ QRMath.EXP_TABLE[i - 6]
-		^ QRMath.EXP_TABLE[i - 8];
-}
-for (var i = 0; i < 255; i++) {
-	QRMath.LOG_TABLE[QRMath.EXP_TABLE[i] ] = i;
-}
-
-module.exports = QRMath;
-
-},
-'./QR8bitByte':function(module,exports,require){
-var QRMode = require('./QRMode');
-
-function QR8bitByte(data) {
-	this.mode = QRMode.MODE_8BIT_BYTE;
-	this.data = data;
-}
-
-QR8bitByte.prototype = {
-
-	getLength : function() {
-		return this.data.length;
-	},
-	
-	write : function(buffer) {
-		for (var i = 0; i < this.data.length; i++) {
-			// not JIS ...
-			buffer.put(this.data.charCodeAt(i), 8);
-		}
-	}
-};
-
-module.exports = QR8bitByte;
-
-},
-'./index':function(module,exports,require){
-//---------------------------------------------------------------------
-// QRCode for JavaScript
-//
-// Copyright (c) 2009 Kazuhiko Arase
-//
-// URL: http://www.d-project.com/
-//
-// Licensed under the MIT license:
-//   http://www.opensource.org/licenses/mit-license.php
-//
-// The word "QR Code" is registered trademark of 
-// DENSO WAVE INCORPORATED
-//   http://www.denso-wave.com/qrcode/faqpatent-e.html
-//
-//---------------------------------------------------------------------
-// Modified to work in node for this project (and some refactoring)
-//---------------------------------------------------------------------
-
-var QR8bitByte = require('./QR8bitByte');
-var QRUtil = require('./QRUtil');
-var QRPolynomial = require('./QRPolynomial');
-var QRRSBlock = require('./QRRSBlock');
-var QRBitBuffer = require('./QRBitBuffer');
-
-function QRCode(typeNumber, errorCorrectLevel) {
-	this.typeNumber = typeNumber;
-	this.errorCorrectLevel = errorCorrectLevel;
-	this.modules = null;
-	this.moduleCount = 0;
-	this.dataCache = null;
-	this.dataList = [];
-}
-
-QRCode.prototype = {
-	
-	addData : function(data) {
-		var newData = new QR8bitByte(data);
-		this.dataList.push(newData);
-		this.dataCache = null;
-	},
-	
-	isDark : function(row, col) {
-		if (row < 0 || this.moduleCount <= row || col < 0 || this.moduleCount <= col) {
-			throw new Error(row + "," + col);
-		}
-		return this.modules[row][col];
-	},
-
-	getModuleCount : function() {
-		return this.moduleCount;
-	},
-	
-	make : function() {
-		// Calculate automatically typeNumber if provided is < 1
-		if (this.typeNumber < 1 ){
-			var typeNumber = 1;
-			for (typeNumber = 1; typeNumber < 40; typeNumber++) {
-				var rsBlocks = QRRSBlock.getRSBlocks(typeNumber, this.errorCorrectLevel);
-
-				var buffer = new QRBitBuffer();
-				var totalDataCount = 0;
-				for (var i = 0; i < rsBlocks.length; i++) {
-					totalDataCount += rsBlocks[i].dataCount;
-				}
-
-				for (var x = 0; x < this.dataList.length; x++) {
-					var data = this.dataList[x];
-					buffer.put(data.mode, 4);
-					buffer.put(data.getLength(), QRUtil.getLengthInBits(data.mode, typeNumber) );
-					data.write(buffer);
-				}
-				if (buffer.getLengthInBits() <= totalDataCount * 8)
-					break;
-			}
-			this.typeNumber = typeNumber;
-		}
-		this.makeImpl(false, this.getBestMaskPattern() );
-	},
-	
-	makeImpl : function(test, maskPattern) {
-		
-		this.moduleCount = this.typeNumber * 4 + 17;
-		this.modules = new Array(this.moduleCount);
-		
-		for (var row = 0; row < this.moduleCount; row++) {
-			
-			this.modules[row] = new Array(this.moduleCount);
-			
-			for (var col = 0; col < this.moduleCount; col++) {
-				this.modules[row][col] = null;//(col + row) % 3;
-			}
-		}
-	
-		this.setupPositionProbePattern(0, 0);
-		this.setupPositionProbePattern(this.moduleCount - 7, 0);
-		this.setupPositionProbePattern(0, this.moduleCount - 7);
-		this.setupPositionAdjustPattern();
-		this.setupTimingPattern();
-		this.setupTypeInfo(test, maskPattern);
-		
-		if (this.typeNumber >= 7) {
-			this.setupTypeNumber(test);
-		}
-	
-		if (this.dataCache === null) {
-			this.dataCache = QRCode.createData(this.typeNumber, this.errorCorrectLevel, this.dataList);
-		}
-	
-		this.mapData(this.dataCache, maskPattern);
-	},
-
-	setupPositionProbePattern : function(row, col)  {
-		
-		for (var r = -1; r <= 7; r++) {
-			
-			if (row + r <= -1 || this.moduleCount <= row + r) continue;
-			
-			for (var c = -1; c <= 7; c++) {
-				
-				if (col + c <= -1 || this.moduleCount <= col + c) continue;
-				
-				if ( (0 <= r && r <= 6 && (c === 0 || c === 6) ) || 
-                     (0 <= c && c <= 6 && (r === 0 || r === 6) ) || 
-                     (2 <= r && r <= 4 && 2 <= c && c <= 4) ) {
-					this.modules[row + r][col + c] = true;
-				} else {
-					this.modules[row + r][col + c] = false;
-				}
-			}		
-		}		
-	},
-	
-	getBestMaskPattern : function() {
-	
-		var minLostPoint = 0;
-		var pattern = 0;
-	
-		for (var i = 0; i < 8; i++) {
-			
-			this.makeImpl(true, i);
-	
-			var lostPoint = QRUtil.getLostPoint(this);
-	
-			if (i === 0 || minLostPoint >  lostPoint) {
-				minLostPoint = lostPoint;
-				pattern = i;
-			}
-		}
-	
-		return pattern;
-	},
-	
-	createMovieClip : function(target_mc, instance_name, depth) {
-	
-		var qr_mc = target_mc.createEmptyMovieClip(instance_name, depth);
-		var cs = 1;
-	
-		this.make();
-
-		for (var row = 0; row < this.modules.length; row++) {
-			
-			var y = row * cs;
-			
-			for (var col = 0; col < this.modules[row].length; col++) {
-	
-				var x = col * cs;
-				var dark = this.modules[row][col];
-			
-				if (dark) {
-					qr_mc.beginFill(0, 100);
-					qr_mc.moveTo(x, y);
-					qr_mc.lineTo(x + cs, y);
-					qr_mc.lineTo(x + cs, y + cs);
-					qr_mc.lineTo(x, y + cs);
-					qr_mc.endFill();
-				}
-			}
-		}
-		
-		return qr_mc;
-	},
-
-	setupTimingPattern : function() {
-		
-		for (var r = 8; r < this.moduleCount - 8; r++) {
-			if (this.modules[r][6] !== null) {
-				continue;
-			}
-			this.modules[r][6] = (r % 2 === 0);
-		}
-	
-		for (var c = 8; c < this.moduleCount - 8; c++) {
-			if (this.modules[6][c] !== null) {
-				continue;
-			}
-			this.modules[6][c] = (c % 2 === 0);
-		}
-	},
-	
-	setupPositionAdjustPattern : function() {
-	
-		var pos = QRUtil.getPatternPosition(this.typeNumber);
-		
-		for (var i = 0; i < pos.length; i++) {
-		
-			for (var j = 0; j < pos.length; j++) {
-			
-				var row = pos[i];
-				var col = pos[j];
-				
-				if (this.modules[row][col] !== null) {
-					continue;
-				}
-				
-				for (var r = -2; r <= 2; r++) {
-				
-					for (var c = -2; c <= 2; c++) {
-					
-						if (Math.abs(r) === 2 || 
-                            Math.abs(c) === 2 ||
-                            (r === 0 && c === 0) ) {
-							this.modules[row + r][col + c] = true;
-						} else {
-							this.modules[row + r][col + c] = false;
-						}
-					}
-				}
-			}
-		}
-	},
-	
-	setupTypeNumber : function(test) {
-	
-		var bits = QRUtil.getBCHTypeNumber(this.typeNumber);
-        var mod;
-	
-		for (var i = 0; i < 18; i++) {
-			mod = (!test && ( (bits >> i) & 1) === 1);
-			this.modules[Math.floor(i / 3)][i % 3 + this.moduleCount - 8 - 3] = mod;
-		}
-	
-		for (var x = 0; x < 18; x++) {
-			mod = (!test && ( (bits >> x) & 1) === 1);
-			this.modules[x % 3 + this.moduleCount - 8 - 3][Math.floor(x / 3)] = mod;
-		}
-	},
-	
-	setupTypeInfo : function(test, maskPattern) {
-	
-		var data = (this.errorCorrectLevel << 3) | maskPattern;
-		var bits = QRUtil.getBCHTypeInfo(data);
-        var mod;
-	
-		// vertical		
-		for (var v = 0; v < 15; v++) {
-	
-			mod = (!test && ( (bits >> v) & 1) === 1);
-	
-			if (v < 6) {
-				this.modules[v][8] = mod;
-			} else if (v < 8) {
-				this.modules[v + 1][8] = mod;
-			} else {
-				this.modules[this.moduleCount - 15 + v][8] = mod;
-			}
-		}
-	
-		// horizontal
-		for (var h = 0; h < 15; h++) {
-	
-			mod = (!test && ( (bits >> h) & 1) === 1);
-			
-			if (h < 8) {
-				this.modules[8][this.moduleCount - h - 1] = mod;
-			} else if (h < 9) {
-				this.modules[8][15 - h - 1 + 1] = mod;
-			} else {
-				this.modules[8][15 - h - 1] = mod;
-			}
-		}
-	
-		// fixed module
-		this.modules[this.moduleCount - 8][8] = (!test);
-	
-	},
-	
-	mapData : function(data, maskPattern) {
-		
-		var inc = -1;
-		var row = this.moduleCount - 1;
-		var bitIndex = 7;
-		var byteIndex = 0;
-		
-		for (var col = this.moduleCount - 1; col > 0; col -= 2) {
-	
-			if (col === 6) col--;
-	
-			while (true) {
-	
-				for (var c = 0; c < 2; c++) {
-					
-					if (this.modules[row][col - c] === null) {
-						
-						var dark = false;
-	
-						if (byteIndex < data.length) {
-							dark = ( ( (data[byteIndex] >>> bitIndex) & 1) === 1);
-						}
-	
-						var mask = QRUtil.getMask(maskPattern, row, col - c);
-	
-						if (mask) {
-							dark = !dark;
-						}
-						
-						this.modules[row][col - c] = dark;
-						bitIndex--;
-	
-						if (bitIndex === -1) {
-							byteIndex++;
-							bitIndex = 7;
-						}
-					}
-				}
-								
-				row += inc;
-	
-				if (row < 0 || this.moduleCount <= row) {
-					row -= inc;
-					inc = -inc;
-					break;
-				}
-			}
-		}
-		
-	}
-
-};
-
-QRCode.PAD0 = 0xEC;
-QRCode.PAD1 = 0x11;
-
-QRCode.createData = function(typeNumber, errorCorrectLevel, dataList) {
-	
-	var rsBlocks = QRRSBlock.getRSBlocks(typeNumber, errorCorrectLevel);
-	
-	var buffer = new QRBitBuffer();
-	
-	for (var i = 0; i < dataList.length; i++) {
-		var data = dataList[i];
-		buffer.put(data.mode, 4);
-		buffer.put(data.getLength(), QRUtil.getLengthInBits(data.mode, typeNumber) );
-		data.write(buffer);
-	}
-
-	// calc num max data.
-	var totalDataCount = 0;
-	for (var x = 0; x < rsBlocks.length; x++) {
-		totalDataCount += rsBlocks[x].dataCount;
-	}
-
-	if (buffer.getLengthInBits() > totalDataCount * 8) {
-		throw new Error("code length overflow. (" + 
-            buffer.getLengthInBits() + 
-            ">" +  
-            totalDataCount * 8 + 
-            ")");
-	}
-
-	// end code
-	if (buffer.getLengthInBits() + 4 <= totalDataCount * 8) {
-		buffer.put(0, 4);
-	}
-
-	// padding
-	while (buffer.getLengthInBits() % 8 !== 0) {
-		buffer.putBit(false);
-	}
-
-	// padding
-	while (true) {
-		
-		if (buffer.getLengthInBits() >= totalDataCount * 8) {
-			break;
-		}
-		buffer.put(QRCode.PAD0, 8);
-		
-		if (buffer.getLengthInBits() >= totalDataCount * 8) {
-			break;
-		}
-		buffer.put(QRCode.PAD1, 8);
-	}
-
-	return QRCode.createBytes(buffer, rsBlocks);
-};
-
-QRCode.createBytes = function(buffer, rsBlocks) {
-
-	var offset = 0;
-	
-	var maxDcCount = 0;
-	var maxEcCount = 0;
-	
-	var dcdata = new Array(rsBlocks.length);
-	var ecdata = new Array(rsBlocks.length);
-	
-	for (var r = 0; r < rsBlocks.length; r++) {
-
-		var dcCount = rsBlocks[r].dataCount;
-		var ecCount = rsBlocks[r].totalCount - dcCount;
-
-		maxDcCount = Math.max(maxDcCount, dcCount);
-		maxEcCount = Math.max(maxEcCount, ecCount);
-		
-		dcdata[r] = new Array(dcCount);
-		
-		for (var i = 0; i < dcdata[r].length; i++) {
-			dcdata[r][i] = 0xff & buffer.buffer[i + offset];
-		}
-		offset += dcCount;
-		
-		var rsPoly = QRUtil.getErrorCorrectPolynomial(ecCount);
-		var rawPoly = new QRPolynomial(dcdata[r], rsPoly.getLength() - 1);
-
-		var modPoly = rawPoly.mod(rsPoly);
-		ecdata[r] = new Array(rsPoly.getLength() - 1);
-		for (var x = 0; x < ecdata[r].length; x++) {
-            var modIndex = x + modPoly.getLength() - ecdata[r].length;
-			ecdata[r][x] = (modIndex >= 0)? modPoly.get(modIndex) : 0;
-		}
-
-	}
-	
-	var totalCodeCount = 0;
-	for (var y = 0; y < rsBlocks.length; y++) {
-		totalCodeCount += rsBlocks[y].totalCount;
-	}
-
-	var data = new Array(totalCodeCount);
-	var index = 0;
-
-	for (var z = 0; z < maxDcCount; z++) {
-		for (var s = 0; s < rsBlocks.length; s++) {
-			if (z < dcdata[s].length) {
-				data[index++] = dcdata[s][z];
-			}
-		}
-	}
-
-	for (var xx = 0; xx < maxEcCount; xx++) {
-		for (var t = 0; t < rsBlocks.length; t++) {
-			if (xx < ecdata[t].length) {
-				data[index++] = ecdata[t][xx];
-			}
-		}
-	}
-
-	return data;
-
-};
-
-module.exports = QRCode;
-
-},
-'./QRBitBuffer':function(module,exports,require){
-function QRBitBuffer() {
-	this.buffer = [];
-	this.length = 0;
-}
-
-QRBitBuffer.prototype = {
-
-	get : function(index) {
-		var bufIndex = Math.floor(index / 8);
-		return ( (this.buffer[bufIndex] >>> (7 - index % 8) ) & 1) == 1;
-	},
-	
-	put : function(num, length) {
-		for (var i = 0; i < length; i++) {
-			this.putBit( ( (num >>> (length - i - 1) ) & 1) == 1);
-		}
-	},
-	
-	getLengthInBits : function() {
-		return this.length;
-	},
-	
-	putBit : function(bit) {
-	
-		var bufIndex = Math.floor(this.length / 8);
-		if (this.buffer.length <= bufIndex) {
-			this.buffer.push(0);
-		}
-	
-		if (bit) {
-			this.buffer[bufIndex] |= (0x80 >>> (this.length % 8) );
-		}
-	
-		this.length++;
-	}
-};
-
-module.exports = QRBitBuffer;
-
-},
-'./QRRSBlock':function(module,exports,require){
-var QRErrorCorrectLevel = require('./QRErrorCorrectLevel');
-
-function QRRSBlock(totalCount, dataCount) {
-	this.totalCount = totalCount;
-	this.dataCount  = dataCount;
-}
-
-QRRSBlock.RS_BLOCK_TABLE = [
-
-	// L
-	// M
-	// Q
-	// H
-
-	// 1
-	[1, 26, 19],
-	[1, 26, 16],
-	[1, 26, 13],
-	[1, 26, 9],
-	
-	// 2
-	[1, 44, 34],
-	[1, 44, 28],
-	[1, 44, 22],
-	[1, 44, 16],
-
-	// 3
-	[1, 70, 55],
-	[1, 70, 44],
-	[2, 35, 17],
-	[2, 35, 13],
-
-	// 4		
-	[1, 100, 80],
-	[2, 50, 32],
-	[2, 50, 24],
-	[4, 25, 9],
-	
-	// 5
-	[1, 134, 108],
-	[2, 67, 43],
-	[2, 33, 15, 2, 34, 16],
-	[2, 33, 11, 2, 34, 12],
-	
-	// 6
-	[2, 86, 68],
-	[4, 43, 27],
-	[4, 43, 19],
-	[4, 43, 15],
-	
-	// 7		
-	[2, 98, 78],
-	[4, 49, 31],
-	[2, 32, 14, 4, 33, 15],
-	[4, 39, 13, 1, 40, 14],
-	
-	// 8
-	[2, 121, 97],
-	[2, 60, 38, 2, 61, 39],
-	[4, 40, 18, 2, 41, 19],
-	[4, 40, 14, 2, 41, 15],
-	
-	// 9
-	[2, 146, 116],
-	[3, 58, 36, 2, 59, 37],
-	[4, 36, 16, 4, 37, 17],
-	[4, 36, 12, 4, 37, 13],
-	
-	// 10		
-	[2, 86, 68, 2, 87, 69],
-	[4, 69, 43, 1, 70, 44],
-	[6, 43, 19, 2, 44, 20],
-	[6, 43, 15, 2, 44, 16],
-
-	// 11
-	[4, 101, 81],
-	[1, 80, 50, 4, 81, 51],
-	[4, 50, 22, 4, 51, 23],
-	[3, 36, 12, 8, 37, 13],
-
-	// 12
-	[2, 116, 92, 2, 117, 93],
-	[6, 58, 36, 2, 59, 37],
-	[4, 46, 20, 6, 47, 21],
-	[7, 42, 14, 4, 43, 15],
-
-	// 13
-	[4, 133, 107],
-	[8, 59, 37, 1, 60, 38],
-	[8, 44, 20, 4, 45, 21],
-	[12, 33, 11, 4, 34, 12],
-
-	// 14
-	[3, 145, 115, 1, 146, 116],
-	[4, 64, 40, 5, 65, 41],
-	[11, 36, 16, 5, 37, 17],
-	[11, 36, 12, 5, 37, 13],
-
-	// 15
-	[5, 109, 87, 1, 110, 88],
-	[5, 65, 41, 5, 66, 42],
-	[5, 54, 24, 7, 55, 25],
-	[11, 36, 12],
-
-	// 16
-	[5, 122, 98, 1, 123, 99],
-	[7, 73, 45, 3, 74, 46],
-	[15, 43, 19, 2, 44, 20],
-	[3, 45, 15, 13, 46, 16],
-
-	// 17
-	[1, 135, 107, 5, 136, 108],
-	[10, 74, 46, 1, 75, 47],
-	[1, 50, 22, 15, 51, 23],
-	[2, 42, 14, 17, 43, 15],
-
-	// 18
-	[5, 150, 120, 1, 151, 121],
-	[9, 69, 43, 4, 70, 44],
-	[17, 50, 22, 1, 51, 23],
-	[2, 42, 14, 19, 43, 15],
-
-	// 19
-	[3, 141, 113, 4, 142, 114],
-	[3, 70, 44, 11, 71, 45],
-	[17, 47, 21, 4, 48, 22],
-	[9, 39, 13, 16, 40, 14],
-
-	// 20
-	[3, 135, 107, 5, 136, 108],
-	[3, 67, 41, 13, 68, 42],
-	[15, 54, 24, 5, 55, 25],
-	[15, 43, 15, 10, 44, 16],
-
-	// 21
-	[4, 144, 116, 4, 145, 117],
-	[17, 68, 42],
-	[17, 50, 22, 6, 51, 23],
-	[19, 46, 16, 6, 47, 17],
-
-	// 22
-	[2, 139, 111, 7, 140, 112],
-	[17, 74, 46],
-	[7, 54, 24, 16, 55, 25],
-	[34, 37, 13],
-
-	// 23
-	[4, 151, 121, 5, 152, 122],
-	[4, 75, 47, 14, 76, 48],
-	[11, 54, 24, 14, 55, 25],
-	[16, 45, 15, 14, 46, 16],
-
-	// 24
-	[6, 147, 117, 4, 148, 118],
-	[6, 73, 45, 14, 74, 46],
-	[11, 54, 24, 16, 55, 25],
-	[30, 46, 16, 2, 47, 17],
-
-	// 25
-	[8, 132, 106, 4, 133, 107],
-	[8, 75, 47, 13, 76, 48],
-	[7, 54, 24, 22, 55, 25],
-	[22, 45, 15, 13, 46, 16],
-
-	// 26
-	[10, 142, 114, 2, 143, 115],
-	[19, 74, 46, 4, 75, 47],
-	[28, 50, 22, 6, 51, 23],
-	[33, 46, 16, 4, 47, 17],
-
-	// 27
-	[8, 152, 122, 4, 153, 123],
-	[22, 73, 45, 3, 74, 46],
-	[8, 53, 23, 26, 54, 24],
-	[12, 45, 15, 28, 46, 16],
-
-	// 28
-	[3, 147, 117, 10, 148, 118],
-	[3, 73, 45, 23, 74, 46],
-	[4, 54, 24, 31, 55, 25],
-	[11, 45, 15, 31, 46, 16],
-
-	// 29
-	[7, 146, 116, 7, 147, 117],
-	[21, 73, 45, 7, 74, 46],
-	[1, 53, 23, 37, 54, 24],
-	[19, 45, 15, 26, 46, 16],
-
-	// 30
-	[5, 145, 115, 10, 146, 116],
-	[19, 75, 47, 10, 76, 48],
-	[15, 54, 24, 25, 55, 25],
-	[23, 45, 15, 25, 46, 16],
-
-	// 31
-	[13, 145, 115, 3, 146, 116],
-	[2, 74, 46, 29, 75, 47],
-	[42, 54, 24, 1, 55, 25],
-	[23, 45, 15, 28, 46, 16],
-
-	// 32
-	[17, 145, 115],
-	[10, 74, 46, 23, 75, 47],
-	[10, 54, 24, 35, 55, 25],
-	[19, 45, 15, 35, 46, 16],
-
-	// 33
-	[17, 145, 115, 1, 146, 116],
-	[14, 74, 46, 21, 75, 47],
-	[29, 54, 24, 19, 55, 25],
-	[11, 45, 15, 46, 46, 16],
-
-	// 34
-	[13, 145, 115, 6, 146, 116],
-	[14, 74, 46, 23, 75, 47],
-	[44, 54, 24, 7, 55, 25],
-	[59, 46, 16, 1, 47, 17],
-
-	// 35
-	[12, 151, 121, 7, 152, 122],
-	[12, 75, 47, 26, 76, 48],
-	[39, 54, 24, 14, 55, 25],
-	[22, 45, 15, 41, 46, 16],
-
-	// 36
-	[6, 151, 121, 14, 152, 122],
-	[6, 75, 47, 34, 76, 48],
-	[46, 54, 24, 10, 55, 25],
-	[2, 45, 15, 64, 46, 16],
-
-	// 37
-	[17, 152, 122, 4, 153, 123],
-	[29, 74, 46, 14, 75, 47],
-	[49, 54, 24, 10, 55, 25],
-	[24, 45, 15, 46, 46, 16],
-
-	// 38
-	[4, 152, 122, 18, 153, 123],
-	[13, 74, 46, 32, 75, 47],
-	[48, 54, 24, 14, 55, 25],
-	[42, 45, 15, 32, 46, 16],
-
-	// 39
-	[20, 147, 117, 4, 148, 118],
-	[40, 75, 47, 7, 76, 48],
-	[43, 54, 24, 22, 55, 25],
-	[10, 45, 15, 67, 46, 16],
-
-	// 40
-	[19, 148, 118, 6, 149, 119],
-	[18, 75, 47, 31, 76, 48],
-	[34, 54, 24, 34, 55, 25],
-	[20, 45, 15, 61, 46, 16]
-];
-
-QRRSBlock.getRSBlocks = function(typeNumber, errorCorrectLevel) {
-	
-	var rsBlock = QRRSBlock.getRsBlockTable(typeNumber, errorCorrectLevel);
-	
-	if (rsBlock === undefined) {
-		throw new Error("bad rs block @ typeNumber:" + typeNumber + "/errorCorrectLevel:" + errorCorrectLevel);
-	}
-
-	var length = rsBlock.length / 3;
-	
-	var list = [];
-	
-	for (var i = 0; i < length; i++) {
-
-		var count = rsBlock[i * 3 + 0];
-		var totalCount = rsBlock[i * 3 + 1];
-		var dataCount  = rsBlock[i * 3 + 2];
-
-		for (var j = 0; j < count; j++) {
-			list.push(new QRRSBlock(totalCount, dataCount) );	
-		}
-	}
-	
-	return list;
-};
-
-QRRSBlock.getRsBlockTable = function(typeNumber, errorCorrectLevel) {
-
-	switch(errorCorrectLevel) {
-	case QRErrorCorrectLevel.L :
-		return QRRSBlock.RS_BLOCK_TABLE[(typeNumber - 1) * 4 + 0];
-	case QRErrorCorrectLevel.M :
-		return QRRSBlock.RS_BLOCK_TABLE[(typeNumber - 1) * 4 + 1];
-	case QRErrorCorrectLevel.Q :
-		return QRRSBlock.RS_BLOCK_TABLE[(typeNumber - 1) * 4 + 2];
-	case QRErrorCorrectLevel.H :
-		return QRRSBlock.RS_BLOCK_TABLE[(typeNumber - 1) * 4 + 3];
-	default :
-		return undefined;
-	}
-};
-
-module.exports = QRRSBlock;
-
-}};var cache={};function req(n){n=n.replace(/^\.\//,'./');if(n.slice(-3)==='.js')n=n.slice(0,-3);if(n==='.'||n==='./')n='./index';if(cache[n])return cache[n].exports;var m={exports:{}};cache[n]=m;defs[n](m,m.exports,function(x){return req(x.indexOf('./')===0?x:'./'+x)});return m.exports}return {QRCode:req('./index'),L:req('./QRErrorCorrectLevel')}})();
-</script>
-<script>
 const $ = id => document.getElementById(id);
 const st = (m, c = '') => { $('st').textContent = m; $('st').className = 'st ' + c; };
+/* ---------- Zebra Browser Print ---------- */
 const HOSTS = ['https://localhost:9101', 'http://localhost:9100', 'http://127.0.0.1:9100'];
 let BASE = null, DEVS = [];
-
-async function req(path, opt) {
-  const r = await fetch(BASE + path, opt);
-  const t = await r.text();
-  if (!r.ok) throw new Error(t || ('HTTP ' + r.status));
-  return t;
-}
+async function req(path, opt) { const r = await fetch(BASE + path, opt), t = await r.text(); if (!r.ok) throw new Error(t || ('HTTP ' + r.status)); return t; }
 async function cari() {
   st('Mencari Zebra Browser Print…');
   for (const h of HOSTS) {
-    try { BASE = h; const t = await req('/available'); const j = JSON.parse(t || '{}');
-      DEVS = (j.printer || []);
+    try { BASE = h; const j = JSON.parse(await req('/available') || '{}'); DEVS = j.printer || [];
       if (!DEVS.length) { try { const d = JSON.parse(await req('/default?type=printer') || 'null'); if (d) DEVS = [d]; } catch (e) { } }
-      if (!DEVS.length) { st('Browser Print ditemukan, tapi printer Zebra belum terdeteksi. Cek kabel USB & printer menyala.', 'err'); return; }
-      $('dev').innerHTML = DEVS.map((d, i) => `<option value="${i}">${d.name} · ${d.connection}</option>`).join('');
-      $('dev').style.display = DEVS.length > 1 ? 'block' : 'none';
-      st('Tersambung: ' + DEVS[0].name + ' ✓', 'ok'); $('cetak').disabled = false; $('kal').disabled = false; $('garis').disabled = false; $('maju').disabled = false; return;
-    } catch (e) { /* coba alamat berikutnya */ }
+      if (!DEVS.length) { st('Browser Print ditemukan, tapi printer belum terdeteksi. Cek kabel & printer menyala.', 'err'); return; }
+      $('dev').innerHTML = DEVS.map((d, i) => `<option value="${i}">${d.name} · ${d.connection}</option>`).join(''); $('dev').style.display = DEVS.length > 1 ? 'block' : 'none';
+      st('Tersambung: ' + DEVS[0].name + ' ✓', 'ok'); ['cetak', 'kotak', 'maju'].forEach(i => $(i).disabled = false); return;
+    } catch (e) { }
   }
   BASE = null; st('Zebra Browser Print tidak ditemukan. Lihat "Kalau gagal tersambung".', 'err');
 }
 const dev = () => DEVS[+$('dev').value || 0];
-async function kirim(data) { await req('/write', { method: 'POST', body: JSON.stringify({ device: dev(), data }) }); }
+const kirim = data => req('/write', { method: 'POST', body: JSON.stringify({ device: dev(), data }) });
 
-/* simbol Kacaribu 1-bit (lebar x tinggi titik) untuk ^GFA */
+/* ---------- data barang ---------- */
+const CONTOH = [['KC00412', 'Kalung Rantai Italy', '17K', '75%', '5,20', '5,26'], ['KC00873', 'Cincin Permata Putih', '16K', '70%', '1,85', ''], ['KC01120', 'Gelang Keroncong Ukir', '17K', '75%', '3,10', '3,16'], ['KC00915', 'Cincin Simpul Pasir', '24K', '99%', '5,00', '']];
+function baris(v = ['', '', '', '', '', '']) {
+  const tr = document.createElement('tr');
+  tr.innerHTML = v.map((x, i) => `<td><input value="${x}" aria-label="kolom ${i + 1}"></td>`).join('') + '<td><button class="x" type="button" aria-label="Hapus">✕</button></td>';
+  tr.querySelector('.x').onclick = () => { tr.remove(); pratinjau(); };
+  tr.querySelectorAll('input').forEach(i => i.addEventListener('input', pratinjau));
+  $('rows').appendChild(tr);
+}
+const barang = () => [...$('rows').children].map(tr => { const v = [...tr.querySelectorAll('input')].map(i => i.value.trim());
+  return { kode: v[0].toUpperCase(), nama: v[1], ke: v[2], kd: v[3], nt: v[4], bt: v[5] }; }).filter(b => b.kode);
+
+/* ---------- Code 128 ---------- */
+const P = ['212222','222122','222221','121223','121322','131222','122213','122312','132212','221213','221312','231212','112232','122132','122231','113222','123122','123221','223211','221132','221231','213212','223112','312131','311222','321122','321221','312212','322112','322211','212123','212321','232121','111323','131123','131321','112313','132113','132311','211313','231113','231311','112133','112331','132131','113123','113321','133121','313121','211331','231131','213113','213311','213131','311123','311321','331121','312113','312311','332111','314111','221411','431111','111224','111422','121124','121421','141122','141221','112214','112412','122114','122411','142112','142211','241211','221114','413111','241112','134111','111242','121142','121241','114212','124112','124211','411212','421112','421211','212141','214121','412121','111143','111341','131141','114113','114311','411113','411311','113141','114131','311141','411131','211412','211214','211232','2331112'];
+function c128(t) { const c = [104]; for (const ch of t) c.push(ch.charCodeAt(0) - 32); let s = 104; c.slice(1).forEach((v, i) => s += v * (i + 1)); c.push(s % 103, 106); return c.map(v => P[v]).join(''); }
 const LOGO = { w: 39, h: 34, bpr: 5, hex: '0000000000000FFFE000007FFFFC0000FF7DFE0003F0781F8007C0F007C00F01E001E01E01F800F01C03FC00703807BC0038380F3E0038701C1F001C70780F801C73F003C01CFFE001E00EFFF000F00EE1F000780EE07C003E0EE01E001FFEE00F000FFEE007801FFC7003C03C1C7001E0781C7800F0E038380079C0381C007F80701E003700F00F002F01E007801E03C003E03C0F8001FC7CFF00007FFFFC00001FFFF0000001380000' };
-/* ---------- tata letak label (dipakai untuk ZPL & pratinjau) ---------- */
-const P128 = ['212222','222122','222221','121223','121322','131222','122213','122312','132212','221213','221312','231212','112232','122132','122231','113222','123122','123221','223211','221132','221231','213212','223112','312131','311222','321122','321221','312212','322112','322211','212123','212321','232121','111323','131123','131321','112313','132113','132311','211313','231113','231311','112133','112331','132131','113123','113321','133121','313121','211331','231131','213113','213311','213131','311123','311321','331121','312113','312311','332111','314111','221411','431111','111224','111422','121124','121421','141122','141221','112214','112412','122114','122411','142112','142211','241211','221114','413111','241112','134111','111242','121142','121241','114212','124112','124211','411212','421112','421211','212141','214121','412121','111143','111341','131141','114113','114311','411113','411311','113141','114131','311141','411131','211412','211214','211232','2331112'];
-function c128(t) { const c = [104]; for (const ch of t) c.push(ch.charCodeAt(0) - 32); let s = 104; c.slice(1).forEach((v, i) => s += v * (i + 1)); c.push(s % 103, 106); return c.map(v => P128[v]).join(''); }
-function tataLetak() {
-  const D = +$('dpi').value, W = Math.round(+$('w').value * D), H = Math.round(+$('h').value * D), OX = Math.round(+$('ox').value * D);
-  const kode = $('kode').value.trim().toUpperCase(), nama = $('nama').value.trim(), info = `${$('ke').value} ${$('kd').value}`.trim(), br = $('br').value.trim() + ' gr';
-  const pad = Math.round(1 * D), qty = Math.max(1, Math.min(50, +$('qty').value || 1)), el = [];
-  if ($('pre').value === 'yupo') {
-    const mm = v => Math.round(+v * D), bx = mm($('sw').value), by = mm($('sy').value), bh = mm($('sh').value), p2 = Math.round(D * .5);
-    /* gaya Kacaribu: sayap depan = nama + kode (barcode/QR) · sayap belakang = kode emas, kadar, berat besar */
-    const fit = (t, w, max, k = .56) => Math.max(14, Math.min(max, Math.floor(w / (Math.max(t.length, 4) * k))));
-    /* Label dilipat 2: setengah ATAS = depan (nama + barcode + kode) · setengah BAWAH = belakang (kode emas, kadar, netto, brutto, logo) */
-    const gap = Math.round(D * .8), hh = Math.round(bh / 2) - gap, iw = bx - 2 * p2;
-    const depan = (x0, Y) => {
-      const fn = fit(nama, iw, Math.round(2.2 * D), .52), fk = fit(kode, iw, Math.round(2 * D), .55);
-      el.push({ t: 'tx', x: x0 + p2, y: Y, h: fn, w: iw, d: nama, b: 1, c: 1 });
-      const top = Y + Math.round(fn * 1.1), bot = Y + hh - fk - Math.round(D * .2);
-      const mods = [...c128(kode)].reduce((a, v) => a + +v, 0), mw = Math.max(1, Math.min(3, Math.floor(iw / mods)));
-      el.push({ t: 'bar', x: x0 + Math.max(p2, Math.round((bx - mods * mw) / 2)), y: top, h: Math.max(24, bot - top), mw, d: kode });
-      el.push({ t: 'tx', x: x0 + p2, y: Y + hh - fk, h: fk, w: iw, d: kode, c: 1 });
-    };
-    const belakang = (x0, Y) => {
-      const k1 = $('ke').value.trim(), k2 = $('kd').value.trim(), bru = $('bb').value.trim();
-      const f1 = Math.max(18, Math.min(Math.round(3.2 * D), Math.round(hh * .36)));
-      el.push({ t: 'tx', x: x0 + p2, y: Y, h: f1, w: Math.round(iw * .55), d: k1, b: 1 });
-      el.push({ t: 'tx', x: x0 + p2 + Math.round(iw * .55), y: Y + Math.round(f1 * .25), h: Math.round(f1 * .75), w: Math.round(iw * .45), d: k2, c: 1 });
-      const yN = Y + Math.round(f1 * 1.08), wN = iw - (bru ? 0 : LOGO.w + 4);
-      const fN = Math.max(16, Math.min(fit('N ' + br, wN, f1, .55), Math.round(hh * (bru ? .3 : .42))));
-      el.push({ t: 'tx', x: x0 + p2, y: yN, h: fN, w: wN, d: 'N ' + br, b: 1 });
-      if (bru) { const tB = 'B ' + bru + ' gr', wB = iw - LOGO.w - 4, fB = Math.max(14, Math.min(fit(tB, wB, fN, .55), Math.round(fN * .85)));
-        el.push({ t: 'tx', x: x0 + p2, y: Y + hh - fB, h: fB, w: wB, d: tB }); }
-      el.push({ t: 'logo', x: x0 + bx - p2 - LOGO.w, y: Y + hh - LOGO.h });
-    };
-    const satu = x0 => { depan(x0, by); belakang(x0, by + Math.round(bh / 2) + gap); el.push({ t: 'fold', x: x0, y: by + Math.round(bh / 2), w: bx }); };
-    satu(mm($('kx').value));
-    if ($('isi2').value === 'sama') satu(mm($('kn').value));
-    return { D, W: Math.round(Math.max(+$('w').value, +$('kn').value + +$('sw').value + 1) * D), H, OX, qty, el, sayap: [[mm($('kx').value), by, bx, bh], [mm($('kn').value), by, bx, bh]] };
-  }
-  if ($('jenis').value === 'qr') {
-    const avail = H - 2 * pad, mag = Math.max(1, Math.min(10, Math.floor(Math.min(avail, W * .42) / 23)));
-    const qs = 21 * mag, tx = pad + qs + Math.round(D * 1.2), tw = W - tx - pad;
-    el.push({ t: 'qr', x: pad, y: Math.max(0, Math.round((H - qs) / 2)), mag, d: kode });
-    const lines = [[kode, 1.15]]; if (H >= 18 * D) lines.push([nama, .85]); lines.push([info, 1], [br, 1]);
-    const unit = Math.min(Math.floor(avail / lines.reduce((a, l) => a + l[1] * 1.12, 0)), Math.round(4.5 * D));
-    let y = pad + Math.max(0, Math.round((avail - lines.reduce((a, l) => a + l[1] * 1.12 * unit, 0)) / 2));
-    lines.forEach(([t, k]) => { const f = Math.max(14, Math.round(unit * k)); el.push({ t: 'tx', x: tx, y, h: f, w: tw, d: t }); y += Math.round(f * 1.12); });
-  } else {
-    const fs = Math.max(14, Math.floor(H / 6.2)), bh = Math.max(20, H - 2 * pad - fs - Math.round(D * .6)), mods = [...c128(kode)].reduce((a, v) => a + +v, 0), mw = Math.max(1, Math.min(4, Math.floor((W - 2 * pad) / mods)));
-    el.push({ t: 'bar', x: pad + Math.max(0, Math.round((W - 2 * pad - mods * mw) / 2)), y: pad, h: bh, mw, d: kode });
-    el.push({ t: 'tx', x: pad, y: H - pad - fs, h: fs, w: W - 2 * pad, d: `${kode} · ${info} · ${br}` });
-  }
-  return { D, W, H, OX, qty, el };
+
+/* ---------- tata letak 1 baris (2 label) ---------- */
+const D = 8;                                   // 203 dpi = 8 titik/mm
+const mm = v => Math.round(+v * D);
+const fit = (t, w, max, k = .56) => Math.max(14, Math.min(max, Math.floor(w / (Math.max(t.length, 4) * k))));
+function labelEl(b, x0) {
+  /* margin seperti surat: kiri-kanan 1,5 mm · tepi atas/bawah 1,5 mm · dari garis lipat 1,2 mm */
+  const el = [], bx = mm($('sw').value), by = mm($('sy').value), bh = mm($('sh').value), half = Math.round(bh / 2);
+  const mx = mm(1.5), my = mm(1.5), mf = mm(1.2), iw = bx - 2 * mx, L0 = x0 + mx;
+  /* DEPAN (setengah atas) */
+  const A = by + my, A2 = by + half - mf;                       // area tulis: A..A2
+  const fn = Math.max(12, Math.min(17, Math.floor(iw / (Math.max(b.nama.length, 4) * .52)))), fk = 16;
+  el.push({ t: 'tx', x: L0, y: A, h: fn, w: iw, d: b.nama, b: 1, c: 1 });
+  el.push({ t: 'tx', x: L0, y: A2 - fk, h: fk, w: iw, d: b.kode, c: 1 });
+  const top = A + fn + mm(.5), bot = A2 - fk - mm(.4), mods = [...c128(b.kode)].reduce((a, v) => a + +v, 0), mw = Math.max(1, Math.min(3, Math.floor(iw / mods)));
+  el.push({ t: 'bar', x: x0 + Math.round((bx - mods * mw) / 2), y: top, h: Math.max(20, bot - top), mw, d: b.kode });
+  /* BELAKANG (setengah bawah) */
+  const B = by + half + mf, B2 = by + bh - my, f1 = 24, fN = 22, fB = 17;
+  el.push({ t: 'tx', x: L0, y: B, h: f1, w: Math.round(iw * .55), d: b.ke, b: 1 });
+  el.push({ t: 'tx', x: L0 + Math.round(iw * .55), y: B + 5, h: 18, w: iw - Math.round(iw * .55), d: b.kd, c: 1 });
+  const tN = 'N ' + b.nt + ' gr', yN = B + f1 + mm(.3);
+  const wN = iw - LOGO.w - 6; el.push({ t: 'tx', x: L0, y: yN, h: Math.max(14, Math.min(fN, Math.floor(wN / (tN.length * .55)))), w: wN, d: tN, b: 1 });
+  el.push({ t: 'logo', x: x0 + bx - mx - LOGO.w, y: B2 - LOGO.h });
+  if (b.bt) { const tB = 'B ' + b.bt + ' gr'; el.push({ t: 'tx', x: L0, y: B2 - fB, h: Math.min(fB, fit(tB, iw - LOGO.w - 6, fB, .55)), w: iw - LOGO.w - 6, d: tB }); }
+  return el;
 }
-function zpl() {
-  const L = tataLetak();
-  const media = $('pre').value === 'yupo' ? ($('sensor').value === 'N' ? `^MNN^LL${Math.round(+$('pitch').value * L.D)}` : '^MNW') : '';
-  const yupo = $('pre').value === 'yupo', PW = yupo ? Math.round(104 * L.D) : L.W + L.OX, LT = yupo ? Math.max(-120, Math.min(120, Math.round(+$('vy').value * L.D))) : 0;
-  let z = `^XA^CI28${media}^PW${PW}^LL${media.startsWith('^MNN') ? Math.round(+$('pitch').value * L.D) : L.H}^LT${LT}^LH${L.OX},0`;
-  L.el.forEach(e => {
-    if (e.t === 'qr') z += `^FO${e.x},${Math.max(0, e.y - 2 * e.mag)}^BQN,2,${e.mag}^FDQA,${e.d}^FS`;   // ^BQ menambah sedikit ruang di atas
-    if (e.t === 'tx') { const tx = e.sp ? e.d.split('').join(' ') : e.d; z += `^FO${e.x},${e.y}^A0N,${e.h},${Math.round(e.h * (e.b ? 1 : .9))}^FB${e.w},1,0,${e.c ? 'C' : 'L'}^FD${tx}^FS`; if (e.b) z += `^FO${e.x + 1},${e.y}^A0N,${e.h},${Math.round(e.h)}^FB${e.w},1,0,${e.c ? 'C' : 'L'}^FD${tx}^FS`; }
-    if (e.t === 'bar') z += `^BY${e.mw},3,${e.h}^FO${e.x},${e.y}^BCN,${e.h},N,N,N^FD${e.d}^FS`;
-    if (e.t === 'line') z += `^FO${e.x},${e.y}^GB${e.w},2,2^FS`;
-    if (e.t === 'logo') z += `^FO${e.x},${e.y}^GFA,${LOGO.bpr * LOGO.h},${LOGO.bpr * LOGO.h},${LOGO.bpr},${LOGO.hex}^FS`;
-  });
-  return z + `^PQ${L.qty}^XZ`;
+function barisEl(pair) { const el = []; pair.forEach((b, i) => { if (b) el.push(...labelEl(b, mm(i ? $('kn').value : $('kx').value))); }); return el; }
+const pasang = list => { const r = []; for (let i = 0; i < list.length; i += 2) r.push([list[i], list[i + 1]]); return r; };
+
+/* ---------- ZPL ---------- */
+function kepala() {
+  return `^XA^CI28^MN N${$('mt').value ? '^MT' + $('mt').value : ''}~SD${Math.max(0, Math.min(30, +$('dark').value))}^PR${$('spd').value}^PW${mm(104)}^LL${mm($('pitch').value)}^LT${Math.max(-120, Math.min(120, mm($('vy').value)))}^LH${Math.max(0, mm($('vx').value))},0`.replace('^MN N', '^MNN');
+}
+function zplEl(el) {
+  return el.map(e => {
+    if (e.t === 'tx') { const f = `^A0N,${e.h},${Math.round(e.h * (e.b ? 1 : .9))}^FB${e.w},1,0,${e.c ? 'C' : 'L'}^FD${e.d}^FS`; return `^FO${e.x},${e.y}${f}` + (e.b ? `^FO${e.x + 1},${e.y}${f}` : ''); }
+    if (e.t === 'bar') return `^BY${e.mw},3,${e.h}^FO${e.x},${e.y}^BCN,${e.h},N,N,N^FD${e.d}^FS`;
+    if (e.t === 'logo') return `^FO${e.x},${e.y}^GFA,${LOGO.bpr * LOGO.h},${LOGO.bpr * LOGO.h},${LOGO.bpr},${LOGO.hex}^FS`;
+    if (e.t === 'box') return `^FO${e.x},${e.y}^GB${e.w},${e.h},2^FS`;
+    return '';
+  }).join('');
+}
+const zpl = () => pasang(barang()).map(p => kepala() + zplEl(barisEl(p)) + '^PQ1^XZ').join('\n');
+function zplKotak() {
+  const bx = mm($('sw').value), by = mm($('sy').value), bh = mm($('sh').value), el = [];
+  [mm($('kx').value), mm($('kn').value)].forEach(x0 => { el.push({ t: 'box', x: x0, y: by, w: bx, h: bh }, { t: 'box', x: x0, y: by + Math.round(bh / 2), w: bx, h: 1 }); });
+  return kepala() + zplEl(el) + '^PQ1^XZ';
 }
 
-/* ---------- pratinjau (digambar di laptop, tanpa internet) ---------- */
-function pratinjau() {
-  $('zpl').textContent = zpl();
-  const L = tataLetak(), cv = document.createElement('canvas'); cv.width = L.W + L.OX; cv.height = L.H;
-  const x = cv.getContext('2d'); x.fillStyle = '#fff'; x.fillRect(0, 0, cv.width, cv.height); x.fillStyle = '#000'; x.textBaseline = 'top';
-  x.save(); x.translate(L.OX, 0);
-  L.el.forEach(e => {
-    if (e.t === 'qr') { const q = new QRLIB.QRCode(-1, QRLIB.L.Q); q.addData('QA,' + e.d); q.make(); const n = q.getModuleCount();
-      for (let r = 0; r < n; r++) for (let c = 0; c < n; c++) if (q.isDark(r, c)) x.fillRect(e.x + c * e.mag, e.y + r * e.mag, e.mag, e.mag); }
-    if (e.t === 'tx') { x.save(); x.beginPath(); x.rect(e.x, e.y, e.w, e.h * 1.2); x.clip(); x.font = `${e.b ? '700 ' : ''}${e.h}px "Arial Narrow", Arial, sans-serif`; const dd = e.sp ? e.d.split('').join(' ') : e.d; e = Object.assign({}, e, { d: dd }); if (e.c) { x.textAlign = 'center'; x.fillText(e.d, e.x + e.w / 2, e.y); x.textAlign = 'left'; } else x.fillText(e.d, e.x, e.y); x.restore(); }
-    if (e.t === 'line') x.fillRect(e.x, e.y, e.w, 2);
-    if (e.t === 'fold') { x.save(); x.strokeStyle = '#A12A47'; x.setLineDash([3, 3]); x.beginPath(); x.moveTo(e.x, e.y); x.lineTo(e.x + e.w, e.y); x.stroke(); x.restore(); }
-    if (e.t === 'logo') for (let r = 0; r < LOGO.h; r++) for (let c = 0; c < LOGO.w; c++) { const by = parseInt(LOGO.hex.substr((r * LOGO.bpr + (c >> 3)) * 2, 2), 16); if (by & (0x80 >> (c & 7))) x.fillRect(e.x + c, e.y + r, 1, 1); }
+/* ---------- pratinjau ---------- */
+function gambar(el) {
+  const cv = document.createElement('canvas'); cv.width = mm(96); cv.height = mm($('pitch').value);
+  const x = cv.getContext('2d'); x.fillStyle = '#fff'; x.fillRect(0, 0, cv.width, cv.height); x.textBaseline = 'top';
+  const bx = mm($('sw').value), by = mm($('sy').value), bh = mm($('sh').value);
+  /* bentuk label: kotak (dilipat 2) + leher + ekor panjang ke arah tengah */
+  x.fillStyle = '#E4DED7'; x.fillRect(0, 0, cv.width, cv.height);            // kertas dasar (liner)
+  const bentuk = (x0, kanan) => {
+    /* gambar dalam koordinat "label kiri" lalu dicerminkan untuk label kanan */
+    const d = kanan ? -1 : 1, ex = kanan ? x0 : x0 + bx, X = v => ex + d * v;
+    const nH = mm(5), nL = mm(12), sh = mm(2), tH = mm(2.2), tL = mm(21), r = mm(1);
+    const ny = kanan ? by + bh - mm(1.5) - nH : by + mm(1.5), ty = kanan ? ny + nH - tH : ny;   // kiri: pengait di atas · kanan: di bawah
+    x.beginPath();
+    x.roundRect(x0, by, bx, bh, mm(1.2));
+    x.moveTo(X(-1), ny); x.lineTo(X(nL), ny);                       // leher
+    if (kanan) { x.lineTo(X(nL), ny); } else { x.lineTo(X(nL), ny + nH - tH - 0.01); }
+    x.closePath();
+    x.fillStyle = '#FFFFFF'; x.fill();
+    /* leher + bahu miring + ekor (satu bentuk) */
+    x.beginPath();
+    const pts = kanan
+      ? [[-1, ny], [nL, ny], [nL + sh, ty], [nL + sh + tL - r, ty], [nL + sh + tL, ty + tH / 2], [nL + sh + tL - r, ty + tH], [nL, ny + nH], [-1, ny + nH]]
+      : [[-1, ny], [nL, ny], [nL + sh, ty], [nL + sh + tL - r, ty], [nL + sh + tL, ty + tH / 2], [nL + sh + tL - r, ty + tH], [nL + sh, ty + tH], [nL, ny + nH], [-1, ny + nH]];
+    pts.forEach((p, k) => k ? x.lineTo(X(p[0]), p[1]) : x.moveTo(X(p[0]), p[1])); x.closePath();
+    x.fillStyle = '#FFFFFF'; x.fill(); x.strokeStyle = '#B9AA9B'; x.lineWidth = 1; x.stroke();
+    /* takik kecil (pengait) di leher */
+    x.fillStyle = '#E4DED7'; x.fillRect(Math.min(X(mm(4)), X(mm(6.5))), kanan ? ny : ny + nH - mm(1.1), mm(2.5), mm(1.1));
+    x.beginPath(); x.roundRect(x0, by, bx, bh, mm(1.2)); x.strokeStyle = '#B9AA9B'; x.stroke();
+    x.save(); x.strokeStyle = '#A12A47'; x.setLineDash([3, 3]); x.beginPath(); x.moveTo(x0, by + bh / 2); x.lineTo(x0 + bx, by + bh / 2); x.stroke(); x.restore();
+  };
+  bentuk(mm($('kx').value), false); bentuk(mm($('kn').value), true);
+  x.fillStyle = '#000';
+  el.forEach(e => {
+    if (e.t === 'tx') { x.save(); x.beginPath(); x.rect(e.x, e.y, e.w, e.h * 1.2); x.clip(); x.font = `${e.b ? '700 ' : ''}${e.h}px "Arial Narrow", Arial, sans-serif`; x.textAlign = e.c ? 'center' : 'left'; x.fillText(e.d, e.c ? e.x + e.w / 2 : e.x, e.y); x.restore(); }
     if (e.t === 'bar') { let xx = e.x; [...c128(e.d)].forEach((v, i) => { const w = +v * e.mw; if (i % 2 === 0) x.fillRect(xx, e.y, w, e.h); xx += w; }); }
+    if (e.t === 'logo') for (let r = 0; r < LOGO.h; r++) for (let c = 0; c < LOGO.w; c++) { const v = parseInt(LOGO.hex.substr((r * LOGO.bpr + (c >> 3)) * 2, 2), 16); if (v & (0x80 >> (c & 7))) x.fillRect(e.x + c, e.y + r, 1, 1); }
   });
-  x.restore();
-  x.strokeStyle = '#C68B1E'; x.setLineDash([4, 3]); x.strokeRect(L.OX + .5, .5, L.W - 1, L.H - 1);
-  if (L.sayap) { x.strokeStyle = '#1A73E8'; L.sayap.forEach(b => x.strokeRect(L.OX + b[0] + .5, b[1] + .5, b[2] - 1, b[3] - 1)); }
-  const sc = Math.max(1, Math.floor(440 / cv.width));
-  $('pv').innerHTML = ''; cv.style.width = Math.min(cv.width * sc, 440) + 'px'; cv.style.maxWidth = '100%'; cv.style.imageRendering = 'auto'; cv.style.imageRendering = 'pixelated'; cv.style.boxShadow = '0 4px 12px rgba(0,0,0,.18)'; $('pv').appendChild(cv);
-  $('pv').insertAdjacentHTML('beforeend', `<small style="display:block;margin-top:8px;text-align:center">Garis emas = batas · garis merah = garis lipat (tidak ikut tercetak)</small>`);
+  cv.style.width = '100%'; return cv;
+}
+function pratinjau() {
+  const rows = pasang(barang()); $('zpl').textContent = zpl();
+  $('pv').innerHTML = rows.length ? `<small>${barang().length} barang → ${rows.length} baris label</small>` : '<small>Belum ada barang</small>';
+  rows.slice(0, 4).forEach(p => $('pv').appendChild(gambar(barisEl(p))));
+  if (rows.length > 4) $('pv').insertAdjacentHTML('beforeend', `<small>… dan ${rows.length - 4} baris lagi</small>`);
+  $('pv').insertAdjacentHTML('beforeend', '<small>Putih = bentuk label (kotak + ekor) · abu = kertas dasar · garis merah = garis lipat (tidak tercetak). Bentuk ekor hanya gambaran.</small>');
 }
 
-$('pre').onchange = () => { const v = $('pre').value; $('yp').style.display = v === 'yupo' ? 'flex' : 'none';
-  if (v === 'yupo') { $('w').value = 80; $('h').value = 24; } else if (v !== 'custom') { const [w, h] = v.split(','); $('w').value = w; $('h').value = h; } pratinjau(); };
-/* penggaris: garis tiap 5 mm, angka tiap 10 mm, selebar kepala printer (104 mm) */
-function penggaris() {
-  const D = +$('dpi').value, LL = Math.round(+$('h').value * D), N = $('sensor').value === 'N', PL = Math.round(+$('pitch').value * D); let z = `^XA${N ? '^MNN^LL' + PL : '^MNW^LL' + LL}^PW${Math.round(104 * D)}^LT${Math.max(-120, Math.min(120, Math.round(+$('vy').value * D)))}^LH0,0`;
-  for (let m = 0; m <= 104; m += 5) { const x = Math.round(m * D), ten = m % 10 === 0; z += `^FO${x},0^GB${ten ? 3 : 1},${ten ? LL : Math.round(LL / 3)},${ten ? 3 : 1}^FS`; if (ten && m < 104) z += `^FO${x + 4},${Math.round(LL / 2 - 12)}^A0N,24,20^FD${m}^FS`; }
-  for (let m = 0; m <= +$('h').value; m += 5) z += `^FO0,${Math.round(m * D)}^GB${Math.round(104 * D)},1,1^FS`;
-  return z + '^PQ1^XZ';
-}
-$('maju').onclick = async () => { try { const D = +$('dpi').value; await kirim(`^XA^MNN^LL${Math.round(+$('pitch').value * D)}^PW${Math.round(104 * D)}^FO0,0^FD ^FS^XZ`); st('Maju 1 label ✓', 'ok'); } catch (e) { st('Gagal: ' + e.message, 'err'); } };
-$('garis').onclick = async () => { try { await kirim(penggaris()); st('Penggaris dicetak ✓ — foto hasilnya untuk menentukan posisi sayap', 'ok'); } catch (e) { st('Gagal: ' + e.message, 'err'); } };
-['kx', 'kn', 'sw', 'sy', 'sh', 'isi2', 'sensor', 'pitch', 'vy', 'kode', 'nama', 'ke', 'kd', 'br', 'bb', 'jenis', 'qty', 'dpi', 'w', 'h', 'ox'].forEach(id => $(id).addEventListener('input', pratinjau));
+/* ---------- tombol ---------- */
 $('cari').onclick = cari;
-$('cetak').onclick = async () => { $('cetak').disabled = true; try { await kirim(zpl()); st('Terkirim ke printer ✓', 'ok'); } catch (e) { st('Gagal mencetak: ' + e.message, 'err'); } $('cetak').disabled = false; };
-$('kal').onclick = async () => { try { await kirim('~JC'); st('Kalibrasi dikirim — printer akan mengeluarkan beberapa label kosong.', 'ok'); } catch (e) { st('Gagal: ' + e.message, 'err'); } };
-$('w').value = 80; $('h').value = 24;
-pratinjau();
+$('tambah').onclick = () => { baris(); pratinjau(); };
+$('cetak').onclick = async () => { const b = $('cetak'); b.disabled = true; try { const pages = zpl().split('\n'); for (let i = 0; i < pages.length; i++) { st(`Mencetak baris ${i + 1}/${pages.length}…`); await kirim(pages[i]); } st('Semua label terkirim ✓', 'ok'); } catch (e) { st('Gagal mencetak: ' + e.message, 'err'); } b.disabled = false; };
+$('kotak').onclick = async () => { try { await kirim(zplKotak()); st('Kotak bantu dicetak ✓', 'ok'); } catch (e) { st('Gagal: ' + e.message, 'err'); } };
+$('maju').onclick = async () => { try { await kirim(kepala() + '^FO0,0^FD ^FS^PQ1^XZ'); st('Maju 1 baris ✓', 'ok'); } catch (e) { st('Gagal: ' + e.message, 'err'); } };
+['kx', 'kn', 'sw', 'sy', 'sh', 'pitch', 'vy', 'vx', 'dark', 'spd', 'mt'].forEach(id => $(id).addEventListener('input', pratinjau));
+CONTOH.forEach(v => baris(v)); pratinjau();
 </script>
 </body></html>
