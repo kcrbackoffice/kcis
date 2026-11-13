@@ -60,8 +60,8 @@ ol{margin:0;padding-left:20px;font-size:14px;line-height:1.6}
   <b>4 · Posisi label (sudah disetel dari hasil tes)</b>
   <div class="g3"><label>Label kiri mulai (mm)<input id="kx" type="number" step="0.5" value="9"></label><label>Label kanan mulai (mm)<input id="kn" type="number" step="0.5" value="66"></label><label>Lebar label (mm)<input id="sw" type="number" step="0.5" value="21"></label></div>
   <div class="g3"><label>Mulai dari atas (mm)<input id="sy" type="number" step="0.5" value="1"></label><label>Tinggi label (mm)<input id="sh" type="number" step="0.5" value="22"></label><label>Jarak antar baris (mm)<input id="pitch" type="number" step="0.05" value="25.4"></label></div>
-  <div class="g2"><label>Geser naik/turun (mm)<input id="vy" type="number" step="0.5" value="-2"></label><label>Geser kanan/kiri (mm)<input id="vx" type="number" step="0.5" value="0"></label></div>
-  <small>Plus = turun / ke kanan, minus = naik / ke kiri. Ubah 0,5 mm per kali coba.</small>
+  <div class="g2"><label>Geser naik/turun (mm)<span style="display:flex;gap:6px"><button class="b3" id="naik" type="button" style="width:auto;padding:6px 12px">▲ 0,5</button><input id="vy" type="number" step="0.5" value="-2"><button class="b3" id="turun" type="button" style="width:auto;padding:6px 12px">▼ 0,5</button></span></label><label>Geser kanan/kiri (mm)<input id="vx" type="number" step="0.5" value="0"></label></div>
+  <small>Plus = turun / ke kanan, minus = naik / ke kiri. Kalau cetakan kurang pas di awal batch, cukup tekan ▲ / ▼ lalu cetak lagi — tidak perlu buka tutup printer. Semua angka di bagian ini <b>tersimpan otomatis</b> di laptop ini.</small>
   <div class="g2"><label>Sensor kertas<select id="sensor"><option value="N">Jarak tetap (cocok untuk label ini)</option><option value="W">Baca celah (tidak cocok: label saling mengait)</option></select></label>
   <button class="b1" id="kal" disabled style="align-self:end">Cetak garis tes jarak (6 baris)</button></div>
   <small><b>Garis tes jarak</b>: mencetak 1 garis tipis di tepi atas kotak label, 6 baris berturut-turut. Kalau garis makin <b>turun</b> tiap baris → kecilkan <i>Jarak antar baris</i>; makin <b>naik</b> → besarkan. Geser 0,1 mm per kali coba. Kalau semua garis menempel di tepi atas, jaraknya sudah pas.</small>
@@ -225,7 +225,12 @@ $('tambah').onclick = () => { baris(); pratinjau(); };
 $('cetak').onclick = async () => { const b = $('cetak'); b.disabled = true; try { const pages = zpl().split('\n'); for (let i = 0; i < pages.length; i++) { st(`Mencetak baris ${i + 1}/${pages.length}…`); await kirim(pages[i]); } st('Semua label terkirim ✓', 'ok'); } catch (e) { st('Gagal mencetak: ' + e.message, 'err'); } b.disabled = false; };
 $('kotak').onclick = async () => { try { await kirim(zplKotak()); st('Kotak bantu dicetak ✓', 'ok'); } catch (e) { st('Gagal: ' + e.message, 'err'); } };
 $('maju').onclick = async () => { try { await kirim(kepala() + '^FO0,0^FD ^FS^PQ1^XZ'); st('Maju 1 baris ✓', 'ok'); } catch (e) { st('Gagal: ' + e.message, 'err'); } };
-['kx', 'kn', 'sw', 'sy', 'sh', 'pitch', 'sensor', 'vy', 'vx', 'dark', 'spd', 'mt'].forEach(id => $(id).addEventListener('input', pratinjau));
+const SIMPAN = ['kx', 'kn', 'sw', 'sy', 'sh', 'pitch', 'sensor', 'vy', 'vx', 'dark', 'spd', 'mt'];
+try { const sv = JSON.parse(localStorage.getItem('zebraSetel') || '{}'); SIMPAN.forEach(id => { if (sv[id] !== undefined) $(id).value = sv[id]; }); } catch (e) {}
+const simpan = () => { try { const o = {}; SIMPAN.forEach(id => o[id] = $(id).value); localStorage.setItem('zebraSetel', JSON.stringify(o)); } catch (e) {} };
+SIMPAN.forEach(id => $(id).addEventListener('input', () => { simpan(); pratinjau(); }));
+const geser = d => { $('vy').value = Math.round((+$('vy').value + d) * 10) / 10; simpan(); pratinjau(); st('Posisi naik/turun: ' + $('vy').value + ' mm', 'ok'); };
+$('naik').onclick = () => geser(-0.5); $('turun').onclick = () => geser(0.5);
 CONTOH.forEach(v => baris(v)); pratinjau();
 </script>
 </body></html>
