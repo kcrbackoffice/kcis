@@ -60,8 +60,10 @@ ol{margin:0;padding-left:20px;font-size:14px;line-height:1.6}
     <label>Resolusi<select id="dpi"><option value="8">203 dpi (ZD230 standar)</option><option value="12">300 dpi</option></select></label></div>
   <div class="g3"><label>Lebar (mm)<input id="w" type="number" step="0.5" value="26"></label><label>Tinggi (mm)<input id="h" type="number" step="0.5" value="10"></label><label>Geser kanan (mm)<input id="ox" type="number" step="0.5" value="0"></label></div>
   <div id="yp" style="display:flex;flex-direction:column;gap:10px">
-    <div class="g3"><label>Sayap kiri mulai (mm)<input id="kx" type="number" step="0.5" value="2"></label><label>Sayap kanan mulai (mm)<input id="kn" type="number" step="0.5" value="54"></label><label>Lebar sayap (mm)<input id="sw" type="number" step="0.5" value="24"></label></div>
-    <div class="g3"><label>Mulai dari atas (mm)<input id="sy" type="number" step="0.5" value="1"></label><label>Tinggi sayap (mm)<input id="sh" type="number" step="0.5" value="10"></label><label>Isi sayap kanan<select id="isi2"><option value="info">Kode emas · kadar · berat</option><option value="kosong">Kosong</option><option value="sama">Sama dengan kiri</option></select></label></div>
+    <div class="g3"><label>Sayap kiri mulai (mm)<input id="kx" type="number" step="0.5" value="9"></label><label>Sayap kanan mulai (mm)<input id="kn" type="number" step="0.5" value="67"></label><label>Lebar sayap (mm)<input id="sw" type="number" step="0.5" value="22"></label></div>
+    <div class="g3"><label>Mulai dari atas (mm)<input id="sy" type="number" step="0.5" value="2"></label><label>Tinggi sayap (mm)<input id="sh" type="number" step="0.5" value="20"></label><label>Isi sayap kanan<select id="isi2"><option value="info">Kode emas · kadar · berat</option><option value="kosong">Kosong</option><option value="sama">Sama dengan kiri</option></select></label></div>
+    <div class="g2"><label>Sensor kertas<select id="sensor"><option value="N">Abaikan celah (disarankan untuk label 2 sayap)</option><option value="W">Otomatis baca celah</option></select></label><label>Jarak antar label (mm)<input id="pitch" type="number" step="0.5" value="26"></label></div>
+    <small>"Jarak antar label" = dari tepi atas sayap satu label ke tepi atas sayap label berikutnya (ukur dengan penggaris).</small>
     <button class="b3" id="garis" disabled>Cetak penggaris (cari posisi sayap)</button>
     <small>Cetak penggaris sekali: angka di label = posisi dalam mm dari kiri. Lihat angka berapa sayap kiri & kanan dimulai, isi di kolom atas, lalu cetak label.</small>
   </div>
@@ -1373,11 +1375,10 @@ function tataLetak() {
     const mm = v => Math.round(+v * D), bx = mm($('sw').value), by = mm($('sy').value), bh = mm($('sh').value), p2 = Math.round(D * .5);
     const kiri = (x0) => {
       if ($('jenis').value === 'qr') {
-        const mag = Math.max(1, Math.min(6, Math.floor((bh - 2 * p2) / 22))), qs = 21 * mag, tx = x0 + p2 + qs + p2 * 2, tw = x0 + bx - tx - p2;
-        el.push({ t: 'qr', x: x0 + p2, y: by + Math.round((bh - qs) / 2), mag, d: kode });
-        const f = Math.max(14, Math.min(Math.floor((bh - 2 * p2) / 2.3), Math.round(3.6 * D), Math.floor(tw / (kode.length * .62))));
-        el.push({ t: 'tx', x: tx, y: by + Math.round(bh / 2 - f * 1.1), h: f, w: tw, d: kode });
-        el.push({ t: 'tx', x: tx, y: by + Math.round(bh / 2 + f * .1), h: Math.round(f * .9), w: tw, d: br });
+        const f = Math.max(16, Math.min(Math.round(3.4 * D), Math.floor((bx - 2 * p2) / (kode.length * .62))));
+        const mag = Math.max(1, Math.min(8, Math.floor((bh - f - 3 * p2) / 22), Math.floor((bx - 2 * p2) / 21))), qs = 21 * mag;
+        el.push({ t: 'qr', x: x0 + Math.round((bx - qs) / 2), y: by + p2, mag, d: kode });
+        el.push({ t: 'tx', x: x0 + p2, y: by + bh - p2 - f, h: f, w: bx - 2 * p2, d: kode, c: 1 });
       } else {
         const f = Math.max(14, Math.round(bh / 4.2)), bh2 = bh - f - 3 * p2, mods = [...c128(kode)].reduce((a, v) => a + +v, 0), mw = Math.max(1, Math.min(3, Math.floor((bx - 2 * p2) / mods)));
         el.push({ t: 'bar', x: x0 + Math.max(p2, Math.round((bx - mods * mw) / 2)), y: by + p2, h: bh2, mw, d: kode });
@@ -1386,11 +1387,11 @@ function tataLetak() {
     };
     const kanan = (x0) => {
       const lines = [[info, 1.15], [br, 1], [nama, .8]], unit = Math.floor((bh - 2 * p2) / lines.reduce((a, l) => a + l[1] * 1.12, 0));
-      let y = by + p2; lines.forEach(([t, k]) => { const f = Math.max(14, Math.round(unit * k)); el.push({ t: 'tx', x: x0 + p2, y, h: f, w: bx - 2 * p2, d: t }); y += Math.round(f * 1.12); });
+      let y = by + p2; lines.forEach(([t, k]) => { const f = Math.max(14, Math.min(Math.round(unit * k), Math.floor((bx - 2 * p2) / (Math.max(t.length, 6) * .56)))); el.push({ t: 'tx', x: x0 + p2, y, h: f, w: bx - 2 * p2, d: t }); y += Math.round(f * 1.18); });
     };
     kiri(mm($('kx').value));
     if ($('isi2').value === 'info') kanan(mm($('kn').value)); else if ($('isi2').value === 'sama') kiri(mm($('kn').value));
-    return { D, W, H, OX, qty, el, sayap: [[mm($('kx').value), by, bx, bh], [mm($('kn').value), by, bx, bh]] };
+    return { D, W: Math.round(Math.max(+$('w').value, +$('kn').value + +$('sw').value + 1) * D), H, OX, qty, el, sayap: [[mm($('kx').value), by, bx, bh], [mm($('kn').value), by, bx, bh]] };
   }
   if ($('jenis').value === 'qr') {
     const avail = H - 2 * pad, mag = Math.max(1, Math.min(10, Math.floor(Math.min(avail, W * .42) / 23)));
@@ -1409,10 +1410,11 @@ function tataLetak() {
 }
 function zpl() {
   const L = tataLetak();
-  let z = `^XA^CI28^PW${L.W + L.OX}^LL${L.H}^LH${L.OX},0`;
+  const media = $('pre').value === 'yupo' ? ($('sensor').value === 'N' ? `^MNN^LL${Math.round(+$('pitch').value * L.D)}` : '^MNW') : '';
+  let z = `^XA^CI28${media}^PW${L.W + L.OX}^LL${media.startsWith('^MNN') ? Math.round(+$('pitch').value * L.D) : L.H}^LH${L.OX},0`;
   L.el.forEach(e => {
     if (e.t === 'qr') z += `^FO${e.x},${Math.max(0, e.y - 2 * e.mag)}^BQN,2,${e.mag}^FDQA,${e.d}^FS`;   // ^BQ menambah sedikit ruang di atas
-    if (e.t === 'tx') z += `^FO${e.x},${e.y}^A0N,${e.h},${Math.round(e.h * .95)}^FB${e.w},1,0,L^FD${e.d}^FS`;
+    if (e.t === 'tx') z += `^FO${e.x},${e.y}^A0N,${e.h},${Math.round(e.h * .95)}^FB${e.w},1,0,${e.c ? 'C' : 'L'}^FD${e.d}^FS`;
     if (e.t === 'bar') z += `^BY${e.mw},3,${e.h}^FO${e.x},${e.y}^BCN,${e.h},N,N,N^FD${e.d}^FS`;
   });
   return z + `^PQ${L.qty}^XZ`;
@@ -1427,7 +1429,7 @@ function pratinjau() {
   L.el.forEach(e => {
     if (e.t === 'qr') { const q = new QRLIB.QRCode(-1, QRLIB.L.Q); q.addData('QA,' + e.d); q.make(); const n = q.getModuleCount();
       for (let r = 0; r < n; r++) for (let c = 0; c < n; c++) if (q.isDark(r, c)) x.fillRect(e.x + c * e.mag, e.y + r * e.mag, e.mag, e.mag); }
-    if (e.t === 'tx') { x.save(); x.beginPath(); x.rect(e.x, e.y, e.w, e.h * 1.2); x.clip(); x.font = `${e.h}px "Arial Narrow", Arial, sans-serif`; x.fillText(e.d, e.x, e.y); x.restore(); }
+    if (e.t === 'tx') { x.save(); x.beginPath(); x.rect(e.x, e.y, e.w, e.h * 1.2); x.clip(); x.font = `${e.h}px "Arial Narrow", Arial, sans-serif`; if (e.c) { x.textAlign = 'center'; x.fillText(e.d, e.x + e.w / 2, e.y); x.textAlign = 'left'; } else x.fillText(e.d, e.x, e.y); x.restore(); }
     if (e.t === 'bar') { let xx = e.x; [...c128(e.d)].forEach((v, i) => { const w = +v * e.mw; if (i % 2 === 0) x.fillRect(xx, e.y, w, e.h); xx += w; }); }
   });
   x.restore();
@@ -1442,13 +1444,13 @@ $('pre').onchange = () => { const v = $('pre').value; $('yp').style.display = v 
   if (v === 'yupo') { $('w').value = 80; $('h').value = 24; } else if (v !== 'custom') { const [w, h] = v.split(','); $('w').value = w; $('h').value = h; } pratinjau(); };
 /* penggaris: garis tiap 5 mm, angka tiap 10 mm, selebar kepala printer (104 mm) */
 function penggaris() {
-  const D = +$('dpi').value, LL = Math.round(+$('h').value * D); let z = `^XA^PW${Math.round(104 * D)}^LL${LL}^LH0,0`;
+  const D = +$('dpi').value, LL = Math.round(+$('h').value * D), N = $('sensor').value === 'N', PL = Math.round(+$('pitch').value * D); let z = `^XA${N ? '^MNN^LL' + PL : '^MNW^LL' + LL}^PW${Math.round(104 * D)}^LH0,0`;
   for (let m = 0; m <= 104; m += 5) { const x = Math.round(m * D), ten = m % 10 === 0; z += `^FO${x},0^GB${ten ? 3 : 1},${ten ? LL : Math.round(LL / 3)},${ten ? 3 : 1}^FS`; if (ten && m < 104) z += `^FO${x + 4},${Math.round(LL / 2 - 12)}^A0N,24,20^FD${m}^FS`; }
   for (let m = 0; m <= +$('h').value; m += 5) z += `^FO0,${Math.round(m * D)}^GB${Math.round(104 * D)},1,1^FS`;
   return z + '^PQ1^XZ';
 }
 $('garis').onclick = async () => { try { await kirim(penggaris()); st('Penggaris dicetak ✓ — foto hasilnya untuk menentukan posisi sayap', 'ok'); } catch (e) { st('Gagal: ' + e.message, 'err'); } };
-['kx', 'kn', 'sw', 'sy', 'sh', 'isi2', 'kode', 'nama', 'ke', 'kd', 'br', 'jenis', 'qty', 'dpi', 'w', 'h', 'ox'].forEach(id => $(id).addEventListener('input', pratinjau));
+['kx', 'kn', 'sw', 'sy', 'sh', 'isi2', 'sensor', 'pitch', 'kode', 'nama', 'ke', 'kd', 'br', 'jenis', 'qty', 'dpi', 'w', 'h', 'ox'].forEach(id => $(id).addEventListener('input', pratinjau));
 $('cari').onclick = cari;
 $('cetak').onclick = async () => { $('cetak').disabled = true; try { await kirim(zpl()); st('Terkirim ke printer ✓', 'ok'); } catch (e) { st('Gagal mencetak: ' + e.message, 'err'); } $('cetak').disabled = false; };
 $('kal').onclick = async () => { try { await kirim('~JC'); st('Kalibrasi dikirim — printer akan mengeluarkan beberapa label kosong.', 'ok'); } catch (e) { st('Gagal: ' + e.message, 'err'); } };
