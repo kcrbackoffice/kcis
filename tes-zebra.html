@@ -63,9 +63,10 @@ ol{margin:0;padding-left:20px;font-size:14px;line-height:1.6}
   <div id="yp" style="display:flex;flex-direction:column;gap:10px">
     <div class="g3"><label>Label kiri mulai (mm)<input id="kx" type="number" step="0.5" value="9"></label><label>Label kanan mulai (mm)<input id="kn" type="number" step="0.5" value="66"></label><label>Lebar label (mm)<input id="sw" type="number" step="0.5" value="21"></label></div>
     <div class="g3"><label>Mulai dari atas (mm)<input id="sy" type="number" step="0.5" value="1"></label><label>Tinggi label, dilipat 2 (mm)<input id="sh" type="number" step="0.5" value="22"></label><label>Label kanan<select id="isi2"><option value="sama">Cetak juga (barang sama)</option><option value="kosong">Kosong</option></select></label></div>
-    <div class="g2"><label>Sensor kertas<select id="sensor"><option value="N">Abaikan celah (disarankan untuk label 2 sayap)</option><option value="W">Otomatis baca celah</option></select></label><label>Jarak antar label (mm)<input id="pitch" type="number" step="0.5" value="26"></label></div>
+    <div class="g2"><label>Sensor kertas<select id="sensor"><option value="N">Abaikan celah (disarankan untuk label lipat)</option><option value="W">Otomatis baca celah</option></select></label><label>Jarak antar label (mm)<input id="pitch" type="number" step="0.1" value="25.4"></label></div>
     <small>"Jarak antar label" = dari tepi atas sayap satu label ke tepi atas sayap label berikutnya (ukur dengan penggaris).</small>
-    <button class="b3" id="garis" disabled>Cetak penggaris (cari posisi sayap)</button>
+    <div class="g2"><label>Geser naik/turun (mm)<input id="vy" type="number" step="0.5" value="-2"></label><small style="align-self:end">Minus = naik, plus = turun. Isi kalau tulisan terlalu ke bawah/atas.</small></div>
+    <div class="g2"><button class="b3" id="garis" disabled>Cetak penggaris</button><button class="b3" id="maju" disabled>Maju 1 label (kosong)</button></div>
     <small>Cetak penggaris sekali: angka di label = posisi dalam mm dari kiri. Lihat angka berapa sayap kiri & kanan dimulai, isi di kolom atas, lalu cetak label.</small>
   </div>
   <small>Ukur bagian label yang <b>tercetak</b>. Kalau hasil cetak bergeser, atur "Geser kanan".</small>
@@ -1357,7 +1358,7 @@ async function cari() {
       if (!DEVS.length) { st('Browser Print ditemukan, tapi printer Zebra belum terdeteksi. Cek kabel USB & printer menyala.', 'err'); return; }
       $('dev').innerHTML = DEVS.map((d, i) => `<option value="${i}">${d.name} · ${d.connection}</option>`).join('');
       $('dev').style.display = DEVS.length > 1 ? 'block' : 'none';
-      st('Tersambung: ' + DEVS[0].name + ' ✓', 'ok'); $('cetak').disabled = false; $('kal').disabled = false; $('garis').disabled = false; return;
+      st('Tersambung: ' + DEVS[0].name + ' ✓', 'ok'); $('cetak').disabled = false; $('kal').disabled = false; $('garis').disabled = false; $('maju').disabled = false; return;
     } catch (e) { /* coba alamat berikutnya */ }
   }
   BASE = null; st('Zebra Browser Print tidak ditemukan. Lihat "Kalau gagal tersambung".', 'err');
@@ -1423,7 +1424,8 @@ function tataLetak() {
 function zpl() {
   const L = tataLetak();
   const media = $('pre').value === 'yupo' ? ($('sensor').value === 'N' ? `^MNN^LL${Math.round(+$('pitch').value * L.D)}` : '^MNW') : '';
-  let z = `^XA^CI28${media}^PW${L.W + L.OX}^LL${media.startsWith('^MNN') ? Math.round(+$('pitch').value * L.D) : L.H}^LH${L.OX},0`;
+  const yupo = $('pre').value === 'yupo', PW = yupo ? Math.round(104 * L.D) : L.W + L.OX, LT = yupo ? Math.max(-120, Math.min(120, Math.round(+$('vy').value * L.D))) : 0;
+  let z = `^XA^CI28${media}^PW${PW}^LL${media.startsWith('^MNN') ? Math.round(+$('pitch').value * L.D) : L.H}^LT${LT}^LH${L.OX},0`;
   L.el.forEach(e => {
     if (e.t === 'qr') z += `^FO${e.x},${Math.max(0, e.y - 2 * e.mag)}^BQN,2,${e.mag}^FDQA,${e.d}^FS`;   // ^BQ menambah sedikit ruang di atas
     if (e.t === 'tx') { const tx = e.sp ? e.d.split('').join(' ') : e.d; z += `^FO${e.x},${e.y}^A0N,${e.h},${Math.round(e.h * (e.b ? 1 : .9))}^FB${e.w},1,0,${e.c ? 'C' : 'L'}^FD${tx}^FS`; if (e.b) z += `^FO${e.x + 1},${e.y}^A0N,${e.h},${Math.round(e.h)}^FB${e.w},1,0,${e.c ? 'C' : 'L'}^FD${tx}^FS`; }
@@ -1461,13 +1463,14 @@ $('pre').onchange = () => { const v = $('pre').value; $('yp').style.display = v 
   if (v === 'yupo') { $('w').value = 80; $('h').value = 24; } else if (v !== 'custom') { const [w, h] = v.split(','); $('w').value = w; $('h').value = h; } pratinjau(); };
 /* penggaris: garis tiap 5 mm, angka tiap 10 mm, selebar kepala printer (104 mm) */
 function penggaris() {
-  const D = +$('dpi').value, LL = Math.round(+$('h').value * D), N = $('sensor').value === 'N', PL = Math.round(+$('pitch').value * D); let z = `^XA${N ? '^MNN^LL' + PL : '^MNW^LL' + LL}^PW${Math.round(104 * D)}^LH0,0`;
+  const D = +$('dpi').value, LL = Math.round(+$('h').value * D), N = $('sensor').value === 'N', PL = Math.round(+$('pitch').value * D); let z = `^XA${N ? '^MNN^LL' + PL : '^MNW^LL' + LL}^PW${Math.round(104 * D)}^LT${Math.max(-120, Math.min(120, Math.round(+$('vy').value * D)))}^LH0,0`;
   for (let m = 0; m <= 104; m += 5) { const x = Math.round(m * D), ten = m % 10 === 0; z += `^FO${x},0^GB${ten ? 3 : 1},${ten ? LL : Math.round(LL / 3)},${ten ? 3 : 1}^FS`; if (ten && m < 104) z += `^FO${x + 4},${Math.round(LL / 2 - 12)}^A0N,24,20^FD${m}^FS`; }
   for (let m = 0; m <= +$('h').value; m += 5) z += `^FO0,${Math.round(m * D)}^GB${Math.round(104 * D)},1,1^FS`;
   return z + '^PQ1^XZ';
 }
+$('maju').onclick = async () => { try { const D = +$('dpi').value; await kirim(`^XA^MNN^LL${Math.round(+$('pitch').value * D)}^PW${Math.round(104 * D)}^FO0,0^FD ^FS^XZ`); st('Maju 1 label ✓', 'ok'); } catch (e) { st('Gagal: ' + e.message, 'err'); } };
 $('garis').onclick = async () => { try { await kirim(penggaris()); st('Penggaris dicetak ✓ — foto hasilnya untuk menentukan posisi sayap', 'ok'); } catch (e) { st('Gagal: ' + e.message, 'err'); } };
-['kx', 'kn', 'sw', 'sy', 'sh', 'isi2', 'sensor', 'pitch', 'kode', 'nama', 'ke', 'kd', 'br', 'bb', 'jenis', 'qty', 'dpi', 'w', 'h', 'ox'].forEach(id => $(id).addEventListener('input', pratinjau));
+['kx', 'kn', 'sw', 'sy', 'sh', 'isi2', 'sensor', 'pitch', 'vy', 'kode', 'nama', 'ke', 'kd', 'br', 'bb', 'jenis', 'qty', 'dpi', 'w', 'h', 'ox'].forEach(id => $(id).addEventListener('input', pratinjau));
 $('cari').onclick = cari;
 $('cetak').onclick = async () => { $('cetak').disabled = true; try { await kirim(zpl()); st('Terkirim ke printer ✓', 'ok'); } catch (e) { st('Gagal mencetak: ' + e.message, 'err'); } $('cetak').disabled = false; };
 $('kal').onclick = async () => { try { await kirim('~JC'); st('Kalibrasi dikirim — printer akan mengeluarkan beberapa label kosong.', 'ok'); } catch (e) { st('Gagal: ' + e.message, 'err'); } };
