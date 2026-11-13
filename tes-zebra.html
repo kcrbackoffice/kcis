@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="id"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="only light">
+<title>Tes Label Zebra</title>
+<style>
+:root{--m:#5E1622;--g:#C68B1E;--bg:#FBF7F3;--tx:#241418;--mu:#7E6C71;--ln:#EADDE0}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+main{max-width:980px;margin:0 auto;padding:20px 16px 40px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px}
+@media (max-width:760px){main{grid-template-columns:1fr}}
+h1{grid-column:1/-1;margin:0;font-size:26px;color:var(--m)}
+.card{background:#fff;border-radius:18px;padding:16px;box-shadow:0 10px 26px -18px rgba(94,22,34,.5);display:flex;flex-direction:column;gap:10px}
+.st{font-size:14px;font-weight:600;padding:10px 12px;border-radius:12px;background:#F6EEEF}
+.st.ok{background:#E3F6EC;color:#1D6B45}.st.err{background:#FDE9ED;color:#A12A47}
+button{font:inherit;font-size:15px;font-weight:700;border:0;border-radius:12px;padding:12px;cursor:pointer}
+.b1{background:var(--m);color:#fff}.b2{background:linear-gradient(140deg,#FFE9A3,#F2C24F 40%,#C68B1E);color:#3E0A15}.b3{background:#fff;border:1.5px solid var(--ln);color:var(--tx)}
+button:disabled{opacity:.45;cursor:default}
+label{font-size:13px;font-weight:700;color:var(--mu);display:flex;flex-direction:column;gap:4px}
+input,select{font:inherit;font-size:15px;font-weight:600;color:var(--tx);padding:9px 10px;border-radius:10px;border:1.5px solid var(--ln);width:100%}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:10px}.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+small{color:var(--mu);font-size:13px;line-height:1.45}
+#pv{background:repeating-conic-gradient(#f4f0ec 0 25%,#fff 0 50%) 0 0/16px 16px;border-radius:12px;min-height:140px;display:grid;place-items:center;padding:12px}
+#pv img{max-width:100%;image-rendering:pixelated;box-shadow:0 4px 12px rgba(0,0,0,.18);background:#fff}
+pre{white-space:pre-wrap;word-break:break-all;font-size:12px;background:#F6F2EF;border-radius:10px;padding:10px;margin:0;max-height:160px;overflow:auto}
+ol{margin:0;padding-left:20px;font-size:14px;line-height:1.6}
+</style></head>
+<body><main>
+<h1>Tes cetak label Zebra (ZD230)</h1>
+
+<section class="card">
+  <b>1 · Sambungkan printer</b>
+  <div id="st" class="st">Belum tersambung</div>
+  <button class="b1" id="cari">Cari printer Zebra</button>
+  <select id="dev" style="display:none"></select>
+  <small>Butuh aplikasi gratis <b>Zebra Browser Print</b> yang sedang berjalan di laptop ini.</small>
+  <details><summary style="cursor:pointer;font-weight:700;font-size:14px">Kalau gagal tersambung</summary>
+  <ol>
+    <li>Pastikan ikon Zebra Browser Print muncul di pojok kanan bawah (system tray).</li>
+    <li>Buka <a href="https://localhost:9101/ssl_support" target="_blank" rel="noopener">https://localhost:9101/ssl_support</a> → klik <b>Advanced → Proceed</b>, lalu kembali ke sini dan tekan Cari lagi.</li>
+    <li>Kalau Browser Print menanyakan izin untuk situs ini, pilih <b>Yes / Allow</b>.</li>
+  </ol></details>
+</section>
+
+<section class="card">
+  <b>2 · Data barang (contoh dari KCIS)</b>
+  <div class="g2"><label>Kode barang<input id="kode" value="KC00412"></label><label>Nama<input id="nama" value="Kalung Rantai Italy"></label></div>
+  <div class="g3"><label>Kode emas<input id="ke" value="17K"></label><label>Kadar<input id="kd" value="75%"></label><label>Berat (gr)<input id="br" value="5,20"></label></div>
+  <div class="g2"><label>Jenis kode<select id="jenis"><option value="qr">QR (scanner 2D)</option><option value="bar">Barcode garis (semua scanner)</option></select></label><label>Jumlah label<input id="qty" type="number" min="1" max="50" value="1"></label></div>
+</section>
+
+<section class="card">
+  <b>3 · Ukuran label</b>
+  <div class="g2"><label>Preset<select id="pre">
+    <option value="26,10,0">Ekor perhiasan · area cetak 26 × 10 mm</option>
+    <option value="40,20,0">Label 40 × 20 mm</option>
+    <option value="50,25,0">Label 50 × 25 mm</option>
+    <option value="custom">Atur sendiri</option></select></label>
+    <label>Resolusi<select id="dpi"><option value="8">203 dpi (ZD230 standar)</option><option value="12">300 dpi</option></select></label></div>
+  <div class="g3"><label>Lebar (mm)<input id="w" type="number" step="0.5" value="26"></label><label>Tinggi (mm)<input id="h" type="number" step="0.5" value="10"></label><label>Geser kanan (mm)<input id="ox" type="number" step="0.5" value="0"></label></div>
+  <small>Ukur bagian label yang <b>tercetak</b> (untuk label ekor: kotak lebarnya saja, bukan ekornya). Kalau hasil cetak bergeser, atur "Geser kanan".</small>
+</section>
+
+<section class="card">
+  <b>4 · Pratinjau &amp; cetak</b>
+  <div id="pv"><small>Memuat pratinjau…</small></div>
+  <div class="g2"><button class="b2" id="cetak" disabled>Cetak label</button><button class="b3" id="kal" disabled>Kalibrasi kertas</button></div>
+  <small>"Kalibrasi" dipakai sekali saat ganti gulungan label, supaya printer tahu batas tiap label.</small>
+  <details><summary style="cursor:pointer;font-size:13px;color:var(--mu)">Kode ZPL yang dikirim</summary><pre id="zpl"></pre></details>
+</section>
+</main>
+<script>
+const $ = id => document.getElementById(id);
+const st = (m, c = '') => { $('st').textContent = m; $('st').className = 'st ' + c; };
+const HOSTS = ['https://localhost:9101', 'http://localhost:9100', 'http://127.0.0.1:9100'];
+let BASE = null, DEVS = [];
+
+async function req(path, opt) {
+  const r = await fetch(BASE + path, opt);
+  const t = await r.text();
+  if (!r.ok) throw new Error(t || ('HTTP ' + r.status));
+  return t;
+}
+async function cari() {
+  st('Mencari Zebra Browser Print…');
+  for (const h of HOSTS) {
+    try { BASE = h; const t = await req('/available'); const j = JSON.parse(t || '{}');
+      DEVS = (j.printer || []);
+      if (!DEVS.length) { try { const d = JSON.parse(await req('/default?type=printer') || 'null'); if (d) DEVS = [d]; } catch (e) { } }
+      if (!DEVS.length) { st('Browser Print ditemukan, tapi printer Zebra belum terdeteksi. Cek kabel USB & printer menyala.', 'err'); return; }
+      $('dev').innerHTML = DEVS.map((d, i) => `<option value="${i}">${d.name} · ${d.connection}</option>`).join('');
+      $('dev').style.display = DEVS.length > 1 ? 'block' : 'none';
+      st('Tersambung: ' + DEVS[0].name + ' ✓', 'ok'); $('cetak').disabled = false; $('kal').disabled = false; return;
+    } catch (e) { /* coba alamat berikutnya */ }
+  }
+  BASE = null; st('Zebra Browser Print tidak ditemukan. Lihat "Kalau gagal tersambung".', 'err');
+}
+const dev = () => DEVS[+$('dev').value || 0];
+async function kirim(data) { await req('/write', { method: 'POST', body: JSON.stringify({ device: dev(), data }) }); }
+
+/* ---------- ZPL ---------- */
+function zpl() {
+  const D = +$('dpi').value, W = Math.round(+$('w').value * D), H = Math.round(+$('h').value * D), OX = Math.round(+$('ox').value * D);
+  const kode = $('kode').value.trim().toUpperCase(), nama = $('nama').value.trim(), info = `${$('ke').value} ${$('kd').value}`.trim(), br = $('br').value.trim() + ' gr';
+  const pad = Math.round(1 * D), qty = Math.max(1, Math.min(50, +$('qty').value || 1));
+  let z = `^XA^CI28^PW${W + OX}^LL${H}^LH${OX},0`;
+  if ($('jenis').value === 'qr') {
+    const avail = H - 2 * pad, mag = Math.max(1, Math.min(10, Math.floor(Math.min(avail, W * .42) / 23)));
+    const qs = 21 * mag, tx = pad + qs + Math.round(D * 1.2), tw = W - tx - pad;
+    const lines = [[kode, 1.15]]; if (H >= 18 * D) lines.push([nama, .85]); lines.push([info, 1], [br, 1]);
+    const unit = Math.min(Math.floor(avail / lines.reduce((a, l) => a + l[1] * 1.12, 0)), Math.round(4.5 * D));
+    z += `^FO${pad},${Math.max(0, Math.round((H - qs) / 2) - mag)}^BQN,2,${mag}^FDQA,${kode}^FS`;
+    let y = pad + Math.max(0, Math.round((avail - lines.reduce((a, l) => a + l[1] * 1.12 * unit, 0)) / 2));
+    lines.forEach(([t, k]) => { const f = Math.max(14, Math.round(unit * k)); z += `^FO${tx},${y}^A0N,${f},${Math.round(f * .95)}^FB${tw},1,0,L^FD${t}^FS`; y += Math.round(f * 1.12); });
+  } else {
+    const fs = Math.max(14, Math.floor(H / 5.2)), bh = Math.max(20, H - 2 * pad - fs - Math.round(D * .6));
+    z += `^BY${D >= 12 ? 2 : 1},3,${bh}^FO${pad},${pad}^BCN,${bh},N,N,N^FD${kode}^FS`;
+    z += `^FO${pad},${H - pad - fs}^A0N,${fs},${fs}^FB${W - 2 * pad},1,0,L^FD${kode}  ${info}  ${br}^FS`;
+  }
+  return z + `^PQ${qty}^XZ`;
+}
+
+/* ---------- pratinjau (Labelary, butuh internet) ---------- */
+let pvT = null;
+function pratinjau() {
+  const z = zpl(); $('zpl').textContent = z;
+  clearTimeout(pvT); pvT = setTimeout(async () => {
+    const D = +$('dpi').value, win = ((+$('w').value + +$('ox').value) / 25.4).toFixed(2), hin = (+$('h').value / 25.4).toFixed(2);
+    try {
+      const r = await fetch(`https://api.labelary.com/v1/printers/${D}dpmm/labels/${win}x${hin}/0/`, { method: 'POST', body: z.replace(/\^PQ\d+/, '') });
+      if (!r.ok) throw new Error();
+      const u = URL.createObjectURL(await r.blob());
+      const sc = Math.max(1, Math.floor(420 / ((+$('w').value + +$('ox').value) * D)));
+      $('pv').innerHTML = `<img src="${u}" alt="Pratinjau label" style="width:${Math.round((+$('w').value + +$('ox').value) * D * sc)}px">`;
+    } catch (e) { $('pv').innerHTML = '<small>Pratinjau tidak tersedia (butuh internet). Cetak tetap bisa.</small>'; }
+  }, 350);
+}
+
+$('pre').onchange = () => { const v = $('pre').value; if (v !== 'custom') { const [w, h] = v.split(','); $('w').value = w; $('h').value = h; } pratinjau(); };
+['kode', 'nama', 'ke', 'kd', 'br', 'jenis', 'qty', 'dpi', 'w', 'h', 'ox'].forEach(id => $(id).addEventListener('input', pratinjau));
+$('cari').onclick = cari;
+$('cetak').onclick = async () => { $('cetak').disabled = true; try { await kirim(zpl()); st('Terkirim ke printer ✓', 'ok'); } catch (e) { st('Gagal mencetak: ' + e.message, 'err'); } $('cetak').disabled = false; };
+$('kal').onclick = async () => { try { await kirim('~JC'); st('Kalibrasi dikirim — printer akan mengeluarkan beberapa label kosong.', 'ok'); } catch (e) { st('Gagal: ' + e.message, 'err'); } };
+pratinjau();
+</script>
+</body></html>
