@@ -46,7 +46,7 @@ ol{margin:0;padding-left:20px;font-size:14px;line-height:1.6}
   <b>2 · Data barang (contoh dari KCIS)</b>
   <div class="g2"><label>Kode barang<input id="kode" value="KC00412"></label><label>Nama<input id="nama" value="Kalung Rantai Italy"></label></div>
   <div class="g3"><label>Kode emas<input id="ke" value="17K"></label><label>Kadar<input id="kd" value="75%"></label><label>Berat (gr)<input id="br" value="5,20"></label></div>
-  <div class="g2"><label>Jenis kode<select id="jenis"><option value="qr">QR (scanner 2D)</option><option value="bar">Barcode garis (semua scanner)</option></select></label><label>Jumlah label<input id="qty" type="number" min="1" max="50" value="1"></label></div>
+  <div class="g2"><label>Jenis kode<select id="jenis"><option value="bar">Barcode garis</option></select></label><label>Jumlah label<input id="qty" type="number" min="1" max="50" value="1"></label></div>
 </section>
 
 <section class="card">
@@ -61,7 +61,7 @@ ol{margin:0;padding-left:20px;font-size:14px;line-height:1.6}
   <div class="g3"><label>Lebar (mm)<input id="w" type="number" step="0.5" value="26"></label><label>Tinggi (mm)<input id="h" type="number" step="0.5" value="10"></label><label>Geser kanan (mm)<input id="ox" type="number" step="0.5" value="0"></label></div>
   <div id="yp" style="display:flex;flex-direction:column;gap:10px">
     <div class="g3"><label>Sayap kiri mulai (mm)<input id="kx" type="number" step="0.5" value="9"></label><label>Sayap kanan mulai (mm)<input id="kn" type="number" step="0.5" value="66"></label><label>Lebar sayap (mm)<input id="sw" type="number" step="0.5" value="21"></label></div>
-    <div class="g3"><label>Mulai dari atas (mm)<input id="sy" type="number" step="0.5" value="2"></label><label>Tinggi sayap (mm)<input id="sh" type="number" step="0.5" value="20"></label><label>Isi sayap kanan<select id="isi2"><option value="info">Kode emas · kadar · berat</option><option value="kosong">Kosong</option><option value="sama">Sama dengan kiri</option></select></label></div>
+    <div class="g3"><label>Mulai dari atas (mm)<input id="sy" type="number" step="0.5" value="2"></label><label>Tinggi sayap (mm)<input id="sh" type="number" step="0.5" value="20"></label><label>Isi sayap kanan<select id="isi2"><option value="info">Kode emas · kadar · berat (disarankan)</option><option value="kosong">Kosong</option><option value="sama">Sama dengan kiri</option></select></label></div>
     <div class="g2"><label>Sensor kertas<select id="sensor"><option value="N">Abaikan celah (disarankan untuk label 2 sayap)</option><option value="W">Otomatis baca celah</option></select></label><label>Jarak antar label (mm)<input id="pitch" type="number" step="0.5" value="26"></label></div>
     <small>"Jarak antar label" = dari tepi atas sayap satu label ke tepi atas sayap label berikutnya (ukur dengan penggaris).</small>
     <button class="b3" id="garis" disabled>Cetak penggaris (cari posisi sayap)</button>
@@ -1364,6 +1364,8 @@ async function cari() {
 const dev = () => DEVS[+$('dev').value || 0];
 async function kirim(data) { await req('/write', { method: 'POST', body: JSON.stringify({ device: dev(), data }) }); }
 
+/* simbol Kacaribu 1-bit (lebar x tinggi titik) untuk ^GFA */
+const LOGO = { w: 55, h: 48, bpr: 7, hex: '0000000000000000000EFDE000000000FFFFFE00000003FFFFFF8000000FFEFFFFE000003FF0FC0FF800007F01F801FC0000FC01F8007E0001F803F0003F0003E003E8000F8007C007DC0007C00F800FBC0003E00F001F3E0001E01F003E7E0001F03E007C7F0000F03C00F83F8000783C01F00FC000787807E007C0007C781F8003E0003C7FFF0001F0003C7FFF0000FC003CFFFF00007E001CFFFF80001F001CF01FC0000F801EF007E00007E01EF001F00003FFFCF000F80001FFFC70007C0001FFFC78003E0001FFFC78001F8003F83C78000FC007C03C3C0007E00F80783C0003F03E00783E0001F87C00F81E0001FCF800F01F0000FDF001E00F80007BE003E007C00077C007C007E0006FC00F8003F0001F801F8001F8003F007F0000FE003F01FC00003FC07E07F800001FFEFEFFF0000007FFFFFFC0000001FFFFFF000000003FFEF8000000000000000000' };
 /* ---------- tata letak label (dipakai untuk ZPL & pratinjau) ---------- */
 const P128 = ['212222','222122','222221','121223','121322','131222','122213','122312','132212','221213','221312','231212','112232','122132','122231','113222','123122','123221','223211','221132','221231','213212','223112','312131','311222','321122','321221','312212','322112','322211','212123','212321','232121','111323','131123','131321','112313','132113','132311','211313','231113','231311','112133','112331','132131','113123','113321','133121','313121','211331','231131','213113','213311','213131','311123','311321','331121','312113','312311','332111','314111','221411','431111','111224','111422','121124','121421','141122','141221','112214','112412','122114','122411','142112','142211','241211','221114','413111','241112','134111','111242','121142','121241','114212','124112','124211','411212','421112','421211','212141','214121','412121','111143','111341','131141','114113','114311','411113','411311','113141','114131','311141','411131','211412','211214','211232','2331112'];
 function c128(t) { const c = [104]; for (const ch of t) c.push(ch.charCodeAt(0) - 32); let s = 104; c.slice(1).forEach((v, i) => s += v * (i + 1)); c.push(s % 103, 106); return c.map(v => P128[v]).join(''); }
@@ -1373,21 +1375,31 @@ function tataLetak() {
   const pad = Math.round(1 * D), qty = Math.max(1, Math.min(50, +$('qty').value || 1)), el = [];
   if ($('pre').value === 'yupo') {
     const mm = v => Math.round(+v * D), bx = mm($('sw').value), by = mm($('sy').value), bh = mm($('sh').value), p2 = Math.round(D * .5);
+    /* gaya Kacaribu: sayap depan = nama + kode (barcode/QR) · sayap belakang = kode emas, kadar, berat besar */
+    const fit = (t, w, max, k = .56) => Math.max(14, Math.min(max, Math.floor(w / (Math.max(t.length, 4) * k))));
     const kiri = (x0) => {
+      const iw = bx - 2 * p2, fn = fit(nama, iw, Math.round(2.9 * D), .5), fk = fit(kode, iw, Math.round(2.6 * D), .55);
+      el.push({ t: 'tx', x: x0 + p2, y: by + p2, h: fn, w: iw, d: nama, b: 1 });
+      el.push({ t: 'line', x: x0 + p2, y: by + p2 + Math.round(fn * 1.15), w: iw });
+      const top = by + p2 + Math.round(fn * 1.15) + Math.round(D * .7), bot = by + bh - p2 - fk - Math.round(D * .4);
       if ($('jenis').value === 'qr') {
-        const f = Math.max(16, Math.min(Math.round(3.4 * D), Math.floor((bx - 2 * p2) / (kode.length * .62))));
-        const mag = Math.max(1, Math.min(8, Math.floor((bh - f - 3 * p2) / 22), Math.floor((bx - 2 * p2) / 21))), qs = 21 * mag;
-        el.push({ t: 'qr', x: x0 + Math.round((bx - qs) / 2), y: by + p2, mag, d: kode });
-        el.push({ t: 'tx', x: x0 + p2, y: by + bh - p2 - f, h: f, w: bx - 2 * p2, d: kode, c: 1 });
+        const mag = Math.max(1, Math.min(8, Math.floor((bot - top) / 21), Math.floor(iw / 21))), qs = 21 * mag;
+        el.push({ t: 'qr', x: x0 + Math.round((bx - qs) / 2), y: top + Math.round((bot - top - qs) / 2), mag, d: kode });
       } else {
-        const cap = `${kode} · ${br}`, f = Math.max(14, Math.min(Math.round(bh / 4.2), Math.floor((bx - 2 * p2) / (cap.length * .5)))), bh2 = bh - f - 3 * p2, mods = [...c128(kode)].reduce((a, v) => a + +v, 0), mw = Math.max(1, Math.min(3, Math.floor((bx - 2 * p2) / mods)));
-        el.push({ t: 'bar', x: x0 + Math.max(p2, Math.round((bx - mods * mw) / 2)), y: by + p2, h: bh2, mw, d: kode });
-        el.push({ t: 'tx', x: x0 + p2, y: by + bh - p2 - f, h: f, w: bx - 2 * p2, d: cap, c: 1 });
+        const mods = [...c128(kode)].reduce((a, v) => a + +v, 0), mw = Math.max(1, Math.min(3, Math.floor(iw / mods)));
+        el.push({ t: 'bar', x: x0 + Math.max(p2, Math.round((bx - mods * mw) / 2)), y: top, h: Math.max(30, bot - top), mw, d: kode });
       }
+      el.push({ t: 'tx', x: x0 + p2, y: by + bh - p2 - fk, h: fk, w: iw, d: kode, c: 1 });
     };
     const kanan = (x0) => {
-      const lines = [[info, 1.15], [br, 1], [nama, .8]], unit = Math.floor((bh - 2 * p2) / lines.reduce((a, l) => a + l[1] * 1.12, 0));
-      let y = by + p2; lines.forEach(([t, k]) => { const f = Math.max(14, Math.min(Math.round(unit * k), Math.floor((bx - 2 * p2) / (Math.max(t.length, 6) * .56)))); el.push({ t: 'tx', x: x0 + p2, y, h: f, w: bx - 2 * p2, d: t }); y += Math.round(f * 1.18); });
+      const iw = bx - 2 * p2, k1 = $('ke').value.trim(), k2 = $('kd').value.trim();
+      const fb = fit(k1, iw * .55, Math.round(5.2 * D), .6), fs = Math.max(16, Math.round(fb * .55));
+      el.push({ t: 'tx', x: x0 + p2, y: by + p2, h: fb, w: Math.round(iw * .6), d: k1, b: 1 });
+      el.push({ t: 'tx', x: x0 + p2 + Math.round(iw * .6), y: by + p2 + Math.round(fb - fs * 1.05), h: fs, w: Math.round(iw * .4), d: k2, c: 1 });
+      el.push({ t: 'line', x: x0 + p2, y: by + p2 + Math.round(fb * 1.12), w: iw });
+      const fw = fit(br, iw, Math.round(4.6 * D), .55);
+      el.push({ t: 'tx', x: x0 + p2, y: by + p2 + Math.round(fb * 1.12) + Math.round(D * .8), h: fw, w: iw, d: br, b: 1 });
+      el.push({ t: 'logo', x: x0 + Math.round((bx - LOGO.w) / 2), y: by + bh - p2 - LOGO.h });
     };
     kiri(mm($('kx').value));
     if ($('isi2').value === 'info') kanan(mm($('kn').value)); else if ($('isi2').value === 'sama') kiri(mm($('kn').value));
@@ -1414,8 +1426,10 @@ function zpl() {
   let z = `^XA^CI28${media}^PW${L.W + L.OX}^LL${media.startsWith('^MNN') ? Math.round(+$('pitch').value * L.D) : L.H}^LH${L.OX},0`;
   L.el.forEach(e => {
     if (e.t === 'qr') z += `^FO${e.x},${Math.max(0, e.y - 2 * e.mag)}^BQN,2,${e.mag}^FDQA,${e.d}^FS`;   // ^BQ menambah sedikit ruang di atas
-    if (e.t === 'tx') z += `^FO${e.x},${e.y}^A0N,${e.h},${Math.round(e.h * .95)}^FB${e.w},1,0,${e.c ? 'C' : 'L'}^FD${e.d}^FS`;
+    if (e.t === 'tx') { const tx = e.sp ? e.d.split('').join(' ') : e.d; z += `^FO${e.x},${e.y}^A0N,${e.h},${Math.round(e.h * (e.b ? 1 : .9))}^FB${e.w},1,0,${e.c ? 'C' : 'L'}^FD${tx}^FS`; if (e.b) z += `^FO${e.x + 1},${e.y}^A0N,${e.h},${Math.round(e.h)}^FB${e.w},1,0,${e.c ? 'C' : 'L'}^FD${tx}^FS`; }
     if (e.t === 'bar') z += `^BY${e.mw},3,${e.h}^FO${e.x},${e.y}^BCN,${e.h},N,N,N^FD${e.d}^FS`;
+    if (e.t === 'line') z += `^FO${e.x},${e.y}^GB${e.w},2,2^FS`;
+    if (e.t === 'logo') z += `^FO${e.x},${e.y}^GFA,${LOGO.bpr * LOGO.h},${LOGO.bpr * LOGO.h},${LOGO.bpr},${LOGO.hex}^FS`;
   });
   return z + `^PQ${L.qty}^XZ`;
 }
@@ -1429,7 +1443,9 @@ function pratinjau() {
   L.el.forEach(e => {
     if (e.t === 'qr') { const q = new QRLIB.QRCode(-1, QRLIB.L.Q); q.addData('QA,' + e.d); q.make(); const n = q.getModuleCount();
       for (let r = 0; r < n; r++) for (let c = 0; c < n; c++) if (q.isDark(r, c)) x.fillRect(e.x + c * e.mag, e.y + r * e.mag, e.mag, e.mag); }
-    if (e.t === 'tx') { x.save(); x.beginPath(); x.rect(e.x, e.y, e.w, e.h * 1.2); x.clip(); x.font = `${e.h}px "Arial Narrow", Arial, sans-serif`; if (e.c) { x.textAlign = 'center'; x.fillText(e.d, e.x + e.w / 2, e.y); x.textAlign = 'left'; } else x.fillText(e.d, e.x, e.y); x.restore(); }
+    if (e.t === 'tx') { x.save(); x.beginPath(); x.rect(e.x, e.y, e.w, e.h * 1.2); x.clip(); x.font = `${e.b ? '700 ' : ''}${e.h}px "Arial Narrow", Arial, sans-serif`; const dd = e.sp ? e.d.split('').join(' ') : e.d; e = Object.assign({}, e, { d: dd }); if (e.c) { x.textAlign = 'center'; x.fillText(e.d, e.x + e.w / 2, e.y); x.textAlign = 'left'; } else x.fillText(e.d, e.x, e.y); x.restore(); }
+    if (e.t === 'line') x.fillRect(e.x, e.y, e.w, 2);
+    if (e.t === 'logo') for (let r = 0; r < LOGO.h; r++) for (let c = 0; c < LOGO.w; c++) { const by = parseInt(LOGO.hex.substr((r * LOGO.bpr + (c >> 3)) * 2, 2), 16); if (by & (0x80 >> (c & 7))) x.fillRect(e.x + c, e.y + r, 1, 1); }
     if (e.t === 'bar') { let xx = e.x; [...c128(e.d)].forEach((v, i) => { const w = +v * e.mw; if (i % 2 === 0) x.fillRect(xx, e.y, w, e.h); xx += w; }); }
   });
   x.restore();
