@@ -62,6 +62,9 @@ ol{margin:0;padding-left:20px;font-size:14px;line-height:1.6}
   <div class="g3"><label>Mulai dari atas (mm)<input id="sy" type="number" step="0.5" value="1"></label><label>Tinggi label (mm)<input id="sh" type="number" step="0.5" value="22"></label><label>Jarak antar baris (mm)<input id="pitch" type="number" step="0.1" value="25.4"></label></div>
   <div class="g2"><label>Geser naik/turun (mm)<input id="vy" type="number" step="0.5" value="-2"></label><label>Geser kanan/kiri (mm)<input id="vx" type="number" step="0.5" value="0"></label></div>
   <small>Plus = turun / ke kanan, minus = naik / ke kiri. Ubah 0,5 mm per kali coba.</small>
+  <div class="g2"><label>Sensor kertas<select id="sensor"><option value="W">Otomatis baca celah (tidak bergeser)</option><option value="N">Abaikan celah (cadangan)</option></select></label>
+  <button class="b1" id="kal" disabled style="align-self:end">Kalibrasi otomatis</button></div>
+  <small><b>Otomatis</b>: printer mencari awal tiap label sendiri, jadi posisi tidak makin bergeser. Tekan <b>Kalibrasi otomatis</b> sekali setiap ganti gulungan. Kalau hasilnya kacau (cetak terpotong / loncat), pakai <b>Abaikan celah</b>.</small>
   <div class="g2"><button class="b3" id="kotak" disabled>Cetak kotak bantu</button><button class="b3" id="maju" disabled>Maju 1 baris (kosong)</button></div>
   <small><b>Kotak bantu</b> mencetak garis tepi tiap label + garis lipat, supaya kelihatan apakah posisi sudah pas di label fisik.</small>
 </section>
@@ -88,7 +91,7 @@ async function cari() {
       if (!DEVS.length) { try { const d = JSON.parse(await req('/default?type=printer') || 'null'); if (d) DEVS = [d]; } catch (e) { } }
       if (!DEVS.length) { st('Browser Print ditemukan, tapi printer belum terdeteksi. Cek kabel & printer menyala.', 'err'); return; }
       $('dev').innerHTML = DEVS.map((d, i) => `<option value="${i}">${d.name} · ${d.connection}</option>`).join(''); $('dev').style.display = DEVS.length > 1 ? 'block' : 'none';
-      st('Tersambung: ' + DEVS[0].name + ' ✓', 'ok'); ['cetak', 'kotak', 'maju'].forEach(i => $(i).disabled = false); return;
+      st('Tersambung: ' + DEVS[0].name + ' ✓', 'ok'); ['cetak', 'kotak', 'maju', 'kal'].forEach(i => $(i).disabled = false); return;
     } catch (e) { }
   }
   BASE = null; st('Zebra Browser Print tidak ditemukan. Lihat "Kalau gagal tersambung".', 'err');
@@ -143,7 +146,7 @@ const pasang = list => { const r = []; for (let i = 0; i < list.length; i += 2) 
 
 /* ---------- ZPL ---------- */
 function kepala() {
-  return `^XA^CI28^MN N${$('mt').value ? '^MT' + $('mt').value : ''}~SD${Math.max(0, Math.min(30, +$('dark').value))}^PR${$('spd').value}^PW${mm(104)}^LL${mm($('pitch').value)}^LT${Math.max(-120, Math.min(120, mm($('vy').value)))}^LH${Math.max(0, mm($('vx').value))},0`.replace('^MN N', '^MNN');
+  return `^XA^CI28^MN${$('sensor').value}${$('mt').value ? '^MT' + $('mt').value : ''}~SD${Math.max(0, Math.min(30, +$('dark').value))}^PR${$('spd').value}^PW${mm(104)}^LL${mm($('pitch').value)}^LT${Math.max(-120, Math.min(120, mm($('vy').value)))}^LH${Math.max(0, mm($('vx').value))},0`;
 }
 function zplEl(el) {
   return el.map(e => {
@@ -210,11 +213,13 @@ function pratinjau() {
 
 /* ---------- tombol ---------- */
 $('cari').onclick = cari;
+/* kalibrasi: set mode baca celah + panjang label, simpan, lalu ~JC (printer maju beberapa label untuk mengukur) */
+$('kal').onclick = async () => { try { await kirim(`^XA^MNW^PW${mm(104)}^LL${mm($('pitch').value)}^JUS^XZ`); await kirim('~JC'); $('sensor').value = 'W'; st('Kalibrasi dikirim — printer akan maju beberapa label kosong, tunggu sampai berhenti.', 'ok'); } catch (e) { st('Gagal: ' + e.message, 'err'); } };
 $('tambah').onclick = () => { baris(); pratinjau(); };
 $('cetak').onclick = async () => { const b = $('cetak'); b.disabled = true; try { const pages = zpl().split('\n'); for (let i = 0; i < pages.length; i++) { st(`Mencetak baris ${i + 1}/${pages.length}…`); await kirim(pages[i]); } st('Semua label terkirim ✓', 'ok'); } catch (e) { st('Gagal mencetak: ' + e.message, 'err'); } b.disabled = false; };
 $('kotak').onclick = async () => { try { await kirim(zplKotak()); st('Kotak bantu dicetak ✓', 'ok'); } catch (e) { st('Gagal: ' + e.message, 'err'); } };
 $('maju').onclick = async () => { try { await kirim(kepala() + '^FO0,0^FD ^FS^PQ1^XZ'); st('Maju 1 baris ✓', 'ok'); } catch (e) { st('Gagal: ' + e.message, 'err'); } };
-['kx', 'kn', 'sw', 'sy', 'sh', 'pitch', 'vy', 'vx', 'dark', 'spd', 'mt'].forEach(id => $(id).addEventListener('input', pratinjau));
+['kx', 'kn', 'sw', 'sy', 'sh', 'pitch', 'sensor', 'vy', 'vx', 'dark', 'spd', 'mt'].forEach(id => $(id).addEventListener('input', pratinjau));
 CONTOH.forEach(v => baris(v)); pratinjau();
 </script>
 </body></html>
