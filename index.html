@@ -11,11 +11,13 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="KCIS">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="theme-color" content="#7A1F2E">
+<meta name="theme-color" content="#FBF7F3">
+<meta name="color-scheme" content="only light">
+<link rel="prefetch" href="pak-netral.webp"><link rel="prefetch" href="pak-bangga.webp"><link rel="prefetch" href="pak-ingat.webp">
 <style>
-  html,body{margin:0;height:100%;background:#FFFFFF;font-family:system-ui,sans-serif}
+  html,body{margin:0;height:100%;background:#FBF7F3;font-family:system-ui,sans-serif;color-scheme:only light}
   iframe{position:fixed;inset:0;width:100%;height:100%;border:0;
-    padding-top:env(safe-area-inset-top);box-sizing:border-box;background:#F5F2EE}
+    padding-top:env(safe-area-inset-top);box-sizing:border-box;background:#FBF7F3;color-scheme:only light}
   #msg{position:fixed;inset:0;display:grid;place-items:center;color:#6F6266;font-size:14px;text-align:center;padding:24px}
 </style>
 </head>
@@ -42,6 +44,21 @@ if (!/^https:\/\/script\.google\.com\/.+\/exec$/.test(KCIS_URL)) {
   f.onload = () => { document.getElementById('msg').style.display = 'none'; };
   f.src = KCIS_URL + '?d=' + dev;
 }
+
+/* ====== v7.5: jembatan cetak slip thermal (RawBT) ======
+   KCIS (di dalam bingkai) mengirim pesan berisi data cetak. Halaman ini yang membuka aplikasi RawBT,
+   karena bingkai Google tidak diizinkan membuka aplikasi lain. Hanya pesan dari server Google yang diterima. */
+const ASAL_OK = /^https:\/\/([a-z0-9-]+\.)*(googleusercontent\.com|script\.google\.com)$/;
+const CETAK_OK = /^intent:base64,[A-Za-z0-9+\/=]+#Intent;scheme=rawbt;package=ru\.a402d\.rawbtprinter;end;$/;
+window.addEventListener('message', function (ev) {
+  if (!ASAL_OK.test(ev.origin)) return;
+  const d = ev.data || {};
+  if (d.kcis === 'ping') { try { ev.source.postMessage({ kcis: 'pong', v: 2 }, ev.origin); } catch (e) {} return; }
+  if (d.kcis === 'print' && typeof d.url === 'string' && CETAK_OK.test(d.url)) {
+    try { ev.source.postMessage({ kcis: 'printAck' }, ev.origin); } catch (e) {}
+    window.location.href = d.url;
+  }
+});
 </script>
 </body>
 </html>
