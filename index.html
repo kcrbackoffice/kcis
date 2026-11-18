@@ -29,8 +29,17 @@
 const KCIS_URL = 'https://script.google.com/macros/s/AKfycbyolUcx0fn7cOqi0zjbwFugANUUh3RBKnkTP5w2wq-nhmmYdDJCOD7auqRW841dZsw6/exec';
 /* ======================================================================== */
 
-// Kode perangkat disimpan di halaman ini (penyimpanannya permanen), jadi HP tidak perlu disetujui ulang.
 const q = new URLSearchParams(location.search);
+/* v7.6: struk digital pelanggan (link dari WhatsApp KCR): tampilkan struknya saja, tanpa login & tanpa kode perangkat */
+const STRUK = /^[A-Za-z0-9]{20,40}$/.test(q.get('s') || '') ? q.get('s') : '';
+if (STRUK && /^https:\/\/script\.google\.com\/.+\/exec$/.test(KCIS_URL)) {
+  document.title = 'Struk digital KCR';
+  const f0 = document.getElementById('app');
+  f0.onload = () => { document.getElementById('msg').style.display = 'none'; };
+  f0.src = KCIS_URL + '?s=' + STRUK;
+  throw new Error('struk');   // berhenti di sini: bagian KCIS di bawah tidak dijalankan
+}
+// Kode perangkat disimpan di halaman ini (penyimpanannya permanen), jadi HP tidak perlu disetujui ulang.
 let dev = q.get('d');
 try { if (!/^D[0-9a-f]{24}$/.test(dev || '')) dev = localStorage.getItem('kcis_dev'); } catch (e) {}
 if (!/^D[0-9a-f]{24}$/.test(dev || '')) dev = 'D' + Array.from(crypto.getRandomValues(new Uint8Array(12)), b => b.toString(16).padStart(2, '0')).join('');
@@ -50,12 +59,27 @@ if (!/^https:\/\/script\.google\.com\/.+\/exec$/.test(KCIS_URL)) {
    karena bingkai Google tidak diizinkan membuka aplikasi lain. Hanya pesan dari server Google yang diterima. */
 const ASAL_OK = /^https:\/\/([a-z0-9-]+\.)*(googleusercontent\.com|script\.google\.com)$/;
 const CETAK_OK = /^intent:base64,[A-Za-z0-9+\/=]+#Intent;scheme=rawbt;package=ru\.a402d\.rawbtprinter;end;$/;
+const KV_OK = ['kcis_tok', 'kcis_view', 'kcis_draf_nota', 'kcis_sales'];
+const WA_OK = /^https:\/\/wa\.me\/\d{8,15}\?text=[^\s]*$/;
 window.addEventListener('message', function (ev) {
   if (!ASAL_OK.test(ev.origin)) return;
   const d = ev.data || {};
-  if (d.kcis === 'ping') { try { ev.source.postMessage({ kcis: 'pong', v: 2 }, ev.origin); } catch (e) {} return; }
+  if (d.kcis === 'ping') { try { ev.source.postMessage({ kcis: 'pong', v: 3 }, ev.origin); } catch (e) {} return; }
   if (d.kcis === 'print' && typeof d.url === 'string' && CETAK_OK.test(d.url)) {
     try { ev.source.postMessage({ kcis: 'printAck' }, ev.origin); } catch (e) {}
+    window.location.href = d.url;
+  }
+  /* v7.6: simpanan tetap (tanda masuk, halaman terakhir, draf nota) supaya tidak perlu login ulang setelah reload */
+  if (d.kcis === 'kvSet' && KV_OK.indexOf(d.k) >= 0) {
+    try { if (d.v === null || d.v === undefined) localStorage.removeItem('kv_' + d.k); else localStorage.setItem('kv_' + d.k, String(d.v).slice(0, 2000000)); } catch (e) {}
+  }
+  if (d.kcis === 'kvAll') {
+    const o = {}; KV_OK.forEach(function (k) { try { const v = localStorage.getItem('kv_' + k); if (v !== null) o[k] = v; } catch (e) {} });
+    try { ev.source.postMessage({ kcis: 'kvAll', data: o }, ev.origin); } catch (e) {}
+  }
+  /* v7.6: buka WhatsApp (wa.me) dari KCIS */
+  if (d.kcis === 'wa' && typeof d.url === 'string' && WA_OK.test(d.url)) {
+    try { ev.source.postMessage({ kcis: 'waAck' }, ev.origin); } catch (e) {}
     window.location.href = d.url;
   }
 });
